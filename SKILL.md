@@ -7,6 +7,8 @@ description: "Scrape and analyze Apple App Store reviews. Use when analyzing com
 
 You have access to a CLI tool that scrapes Apple App Store reviews. Use it when the user asks about competitor analysis, app reviews, user complaints, feature gaps, or bug reports from app stores.
 
+**You ARE the analyzer.** Fetch reviews with the CLI commands below, then analyze them directly in your response. Do NOT suggest the user install Ollama or run the `analyze` command — you have the intelligence to do the analysis yourself.
+
 ## Important Behavior
 
 - **Output streams**: Data goes to stdout, progress/status messages go to stderr. Use `2>/dev/null` to suppress status messages when piping.
@@ -46,7 +48,7 @@ If not installed, use: `python3 cli.py reviews <APP_ID> [options]`
 
 ## Analysis Modes
 
-When the user asks for analysis, first fetch the relevant reviews, then apply one of these approaches:
+When the user asks for analysis, fetch the relevant reviews with the CLI, then **analyze them yourself** in your response. Do not run `analyze` or pipe to another LLM — you are the LLM.
 
 ### Gap Finder
 Fetch 1-2 star reviews and analyze for unmet needs:
@@ -54,14 +56,14 @@ Fetch 1-2 star reviews and analyze for unmet needs:
 appstore-reviews reviews <APP_ID> --stars 2 --days 90 --pages 5 --format text
 ```
 Look for patterns: "I wish it had...", "competitors do X better", "missing feature", "switched to Y".
-**After fetching**, group complaints by feature category, rank by frequency, and cite specific reviews as evidence.
+**In your response**, group complaints by feature category, rank by frequency, and cite specific reviews as evidence.
 
 ### Bug Hunter
 Fetch 1-2 star reviews filtered to technical issues:
 ```bash
 appstore-reviews reviews <APP_ID> --stars 2 --keywords crash,bug,freeze,error,broken,slow,stuck --format text
 ```
-**After fetching**, group by symptom (crashes, performance, data loss), identify affected versions with `--stats`, and rank by severity.
+**In your response**, group by symptom (crashes, performance, data loss), identify affected versions, and rank by severity.
 
 ### Sentiment Snapshot
 Get the big picture before diving in:
