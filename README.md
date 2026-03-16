@@ -10,7 +10,7 @@ Pull reviews for any iOS app, filter by rating/keywords/date, and get clean outp
 # Install
 uv sync            # or: pip install -e .
 
-# 1. Find an app
+# 1. Find an app (returns the numeric ID you need)
 appstore-reviews search "Slack"
 #  ID           Rating    Reviews  Name
 #  803453959      4.3⭐  1,247,800  Slack
@@ -20,9 +20,12 @@ appstore-reviews reviews 803453959 --stars 2 --days 30
 
 # 3. Filter by keywords
 appstore-reviews reviews 803453959 --keywords crash,freeze,notification
+
+# 4. Combine filters (they stack with AND logic)
+appstore-reviews reviews 803453959 --stars 2 --days 30 --keywords crash,freeze
 ```
 
-That's it. Three commands to go from app name → filtered reviews.
+Three commands to go from app name → filtered reviews.
 
 ## What Can You Do With This?
 
@@ -56,17 +59,35 @@ Shows rating distribution so you can see the big picture before diving into indi
 
 ## All Options
 
+**Search:**
+```
+appstore-reviews search "app name"
+    --limit 10             Max results (default: 5)
+    --format json          Output as json instead of table
+```
+
+**Reviews:**
 ```
 appstore-reviews reviews <APP_ID>
     --stars 2              Max star rating to include (1-2 = negative only)
     --days 30              Only reviews from the last N days
-    --keywords crash,bug   Only reviews containing these words
+    --keywords crash,bug   Only reviews containing these words (case-insensitive)
     --version 5.0.1        Only reviews for a specific app version
-    --pages 5              Pages to fetch (1-10, default 3)
-    --format json          Output as json | text | markdown
+    --pages 5              Pages to fetch (1-10, default 3, max useful: 10 = ~500 reviews)
+    --format json          Output as json | text | markdown (default: text)
     --stats                Show rating distribution
     --country de           App Store region (default: us)
 ```
+
+All filters stack with AND logic — combine `--stars`, `--keywords`, `--days`, and `--version` to narrow results.
+
+**Country codes:** `us` (default), `gb`, `de`, `fr`, `jp`, `au`, `ca`, `nl`, `br`, `kr`
+
+## Good to Know
+
+- **Output streams**: Review data goes to stdout, progress/status to stderr. Safe to pipe directly.
+- **Review limit**: Apple's RSS feed returns a max of ~500 reviews per country (10 pages × 50). This is an Apple limitation.
+- **No reviews?** "No reviews match the given filters" means filters are too narrow. Try fewer keywords, more days, or a higher star ceiling.
 
 ## Setup
 
