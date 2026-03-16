@@ -4,6 +4,8 @@ No API key required. Uses the iTunes RSS feed which returns up to
 500 reviews per country (10 pages × 50 reviews).
 """
 
+import json
+import sys
 import time
 import urllib.parse
 from dataclasses import dataclass, asdict
@@ -73,7 +75,11 @@ def search_app(query: str, country: str = "us", limit: int = 5) -> list[AppInfo]
         timeout=15,
     )
     resp.raise_for_status()
-    data = resp.json()
+    try:
+        data = resp.json()
+    except (json.JSONDecodeError, ValueError):
+        print("Warning: App Store returned invalid JSON for search", file=sys.stderr)
+        return []
 
     results = []
     for r in data.get("results", []):
@@ -100,7 +106,11 @@ def lookup_app(app_id: int, country: str = "us") -> Optional[AppInfo]:
         timeout=15,
     )
     resp.raise_for_status()
-    data = resp.json()
+    try:
+        data = resp.json()
+    except (json.JSONDecodeError, ValueError):
+        print("Warning: App Store returned invalid JSON for lookup", file=sys.stderr)
+        return None
 
     results = data.get("results", [])
     if not results:
@@ -157,6 +167,7 @@ def fetch_reviews(
     """
     pages = max(1, min(10, pages))
     all_reviews: list[Review] = []
+    seen_ids: set[str] = set()
 
     for page in range(1, pages + 1):
         url = REVIEWS_URL.format(country=country, page=page, app_id=app_id)
@@ -164,10 +175,16 @@ def fetch_reviews(
         try:
             resp = requests.get(url, headers=DEFAULT_HEADERS, timeout=15)
             resp.raise_for_status()
-        except requests.RequestException:
+        except requests.RequestException as e:
+            print(f"Warning: Failed to fetch page {page}: {e}", file=sys.stderr)
             break
 
-        data = resp.json()
+        try:
+            data = resp.json()
+        except (json.JSONDecodeError, ValueError):
+            print(f"Warning: Invalid JSON on page {page}, skipping", file=sys.stderr)
+            break
+
         entries = data.get("feed", {}).get("entry", [])
 
         if not entries:
@@ -175,7 +192,8 @@ def fetch_reviews(
 
         for entry in entries:
             review = _parse_entry(entry)
-            if review:
+            if review and review.id not in seen_ids:
+                seen_ids.add(review.id)
                 all_reviews.append(review)
 
         # Don't hammer Apple's servers

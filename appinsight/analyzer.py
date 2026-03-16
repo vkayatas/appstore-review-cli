@@ -61,6 +61,8 @@ def list_models() -> list[str]:
 def format_reviews_for_prompt(reviews: list[Review], max_reviews: int = 50) -> str:
     """Format reviews into a compact text block for the LLM prompt."""
     # Limit to avoid exceeding context window on small models
+    if len(reviews) > max_reviews:
+        print(f"Note: Sending {max_reviews} of {len(reviews)} reviews to LLM (context window limit)", file=sys.stderr)
     subset = reviews[:max_reviews]
     blocks = []
     for i, r in enumerate(subset, 1):

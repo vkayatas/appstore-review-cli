@@ -56,7 +56,7 @@ Do NOT pipe output to Ollama or another external LLM. Analyze the review text yo
 **User asks: "What are Slack users complaining about?"**
 ```bash
 appstore-reviews search "Slack"
-# Get the app ID → 618783545
+# Get the app ID from results
 appstore-reviews reviews 618783545 --stars 2 --days 60 --format text --stats
 ```
 Then categorize the complaints in your response: UX issues, missing features, bugs, performance. Rank by frequency.

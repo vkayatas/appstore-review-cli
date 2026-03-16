@@ -10,6 +10,8 @@ Usage:
 import argparse
 import sys
 
+import requests
+
 from .scraper import search_app, lookup_app, fetch_reviews
 from .filters import apply_filters
 from .formatters import to_json, to_markdown, to_text, summary_stats
@@ -18,7 +20,12 @@ from .analyzer import analyze, check_ollama, list_models
 
 def cmd_search(args):
     """Search the App Store by name."""
-    apps = search_app(args.query, country=args.country, limit=args.limit)
+    try:
+        apps = search_app(args.query, country=args.country, limit=args.limit)
+    except requests.RequestException as e:
+        print(f"Error: Failed to search App Store: {e}", file=sys.stderr)
+        sys.exit(1)
+
     if not apps:
         print(f"No apps found for '{args.query}'", file=sys.stderr)
         sys.exit(1)
@@ -37,7 +44,11 @@ def cmd_reviews(args):
     app_id = args.app_id
 
     # Show what we're fetching
-    app = lookup_app(app_id, country=args.country)
+    try:
+        app = lookup_app(app_id, country=args.country)
+    except requests.RequestException:
+        app = None
+
     if app:
         print(f"Fetching reviews for: {app.name} (by {app.developer})", file=sys.stderr)
     else:
@@ -72,16 +83,12 @@ def cmd_reviews(args):
 
 def cmd_analyze(args):
     """Fetch reviews, filter, and analyze with a local LLM via Ollama."""
-    app_id = args.app_id
-
-    # Check Ollama first
-    if not check_ollama():
-        print("Error: Ollama is not running. Start it with: ollama serve", file=sys.stderr)
-        print("Install from: https://ollama.com/download", file=sys.stderr)
-        sys.exit(1)
-
-    # Show available models if requested
+    # Show available models if requested (before Ollama check so it works even as a quick probe)
     if args.list_models:
+        if not check_ollama():
+            print("Ollama is not running. Start it with: ollama serve", file=sys.stderr)
+            print("Install from: https://ollama.com/download", file=sys.stderr)
+            sys.exit(1)
         models = list_models()
         if models:
             print("Available Ollama models:")
@@ -91,8 +98,20 @@ def cmd_analyze(args):
             print("No models found. Pull one with: ollama pull qwen3.5:4b")
         return
 
+    app_id = args.app_id
+
+    # Check Ollama
+    if not check_ollama():
+        print("Error: Ollama is not running. Start it with: ollama serve", file=sys.stderr)
+        print("Install from: https://ollama.com/download", file=sys.stderr)
+        sys.exit(1)
+
     # Fetch
-    app = lookup_app(app_id, country=args.country)
+    try:
+        app = lookup_app(app_id, country=args.country)
+    except requests.RequestException:
+        app = None
+
     if app:
         print(f"Fetching reviews for: {app.name} (by {app.developer})", file=sys.stderr)
     else:
@@ -115,6 +134,10 @@ def cmd_analyze(args):
     if not reviews:
         print("No reviews match the given filters. Try relaxing your filters.", file=sys.stderr)
         sys.exit(0)
+
+    # Stats
+    if args.stats:
+        print("\n" + summary_stats(reviews), file=sys.stderr)
 
     # Analyze
     print(f"\nAnalyzing with {args.model} (mode: {args.mode})...\n", file=sys.stderr)
@@ -148,11 +171,13 @@ def main():
     # --- reviews ---
     p_reviews = sub.add_parser("reviews", help="Fetch and filter reviews")
     p_reviews.add_argument("app_id", type=int, help="Numeric App Store ID (use 'search' to find it)")
-    p_reviews.add_argument("--stars", type=int, default=None, help="Max star rating to include (e.g. 2 = 1-2 stars)")
+    p_reviews.add_argument("--stars", type=int, default=None, choices=range(1, 6),
+                           help="Max star rating to include (e.g. 2 = 1-2 stars)", metavar="STARS")
     p_reviews.add_argument("--days", type=int, default=None, help="Only reviews from the last N days")
     p_reviews.add_argument("--keywords", default=None, help="Comma-separated keywords to filter by")
     p_reviews.add_argument("--version", default=None, help="Filter by app version")
-    p_reviews.add_argument("--pages", type=int, default=3, help="Pages to fetch, 1-10 (default: 3)")
+    p_reviews.add_argument("--pages", type=int, default=3, choices=range(1, 11),
+                           help="Pages to fetch, 1-10 (default: 3)", metavar="PAGES")
     p_reviews.add_argument("--format", choices=["text", "json", "markdown"], default="text")
     p_reviews.add_argument("--stats", action="store_true", help="Show rating distribution stats")
 
@@ -162,11 +187,14 @@ def main():
     p_analyze.add_argument("--mode", choices=["summary", "gaps", "bugs"], default="summary",
                            help="Analysis mode: summary, gaps (feature gaps), bugs (technical issues)")
     p_analyze.add_argument("--model", default="qwen3.5:4b", help="Ollama model to use (default: qwen3.5:4b)")
-    p_analyze.add_argument("--stars", type=int, default=None, help="Max star rating to include")
+    p_analyze.add_argument("--stars", type=int, default=None, choices=range(1, 6),
+                           help="Max star rating to include", metavar="STARS")
     p_analyze.add_argument("--days", type=int, default=None, help="Only reviews from the last N days")
     p_analyze.add_argument("--keywords", default=None, help="Comma-separated keywords to filter by")
     p_analyze.add_argument("--version", default=None, help="Filter by app version")
-    p_analyze.add_argument("--pages", type=int, default=3, help="Pages to fetch, 1-10 (default: 3)")
+    p_analyze.add_argument("--pages", type=int, default=3, choices=range(1, 11),
+                           help="Pages to fetch, 1-10 (default: 3)", metavar="PAGES")
+    p_analyze.add_argument("--stats", action="store_true", help="Show rating distribution before analysis")
     p_analyze.add_argument("--list-models", action="store_true", help="List available Ollama models and exit")
 
     args = parser.parse_args()

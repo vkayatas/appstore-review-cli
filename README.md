@@ -150,6 +150,7 @@ The agent handles the search, filtering, and analysis for you.
 appstore-reviews search "app name"
     --limit 10             Max results (default: 5)
     --format json          Output as json instead of table
+    --country de           App Store region (default: us)
 ```
 
 **Reviews:**
