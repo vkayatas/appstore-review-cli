@@ -13,8 +13,11 @@ You have access to a CLI tool that scrapes Apple App Store reviews. Use it when 
 
 - **Output streams**: Data goes to stdout, progress/status messages go to stderr. Use `2>/dev/null` to suppress status messages when piping.
 - **Review limit**: Apple's RSS feed returns a maximum of ~500 reviews per country (10 pages × 50 reviews). Don't expect more.
+- **Deduplication**: Reviews are automatically deduplicated across pages.
+- **Input validation**: `--stars` accepts 1-5, `--pages` accepts 1-10. Invalid values produce an error.
 - **Filters stack**: `--stars`, `--keywords`, `--days`, and `--version` combine with AND logic. Each filter narrows the previous result.
 - **"No reviews match"**: If filters return zero results, the output will say "No reviews match the given filters." This is normal — try relaxing filters (fewer keywords, more days, higher star rating).
+- **Network errors**: If Apple's API is unreachable, the CLI prints a friendly error to stderr instead of a traceback.
 
 ## Available Commands
 
@@ -30,6 +33,8 @@ Returns app IDs, names, ratings. Use this first to find the numeric app ID.
 - `--limit 10` — Max results to return (default: 5)
 - `--format json` — Output as JSON instead of table (useful for structured processing)
 
+`--country` also works with search (e.g., `--country de` to search the German App Store).
+
 ### 2. Fetch and filter reviews
 ```bash
 appstore-reviews reviews <APP_ID> [options]
@@ -37,7 +42,7 @@ appstore-reviews reviews <APP_ID> [options]
 If not installed, use: `python3 cli.py reviews <APP_ID> [options]`
 
 **Options (all optional, filters stack with AND logic):**
-- `--stars 2` — Only 1-2 star reviews (negative sentiment)
+- `--stars 2` — Only 1-2 star reviews (negative sentiment). Valid range: 1-5.
 - `--days 30` — Only reviews from the last 30 days
 - `--keywords crash,freeze,bug` — Only reviews mentioning these words (case-insensitive, matches title or content)
 - `--version 5.0.1` — Only reviews for a specific version

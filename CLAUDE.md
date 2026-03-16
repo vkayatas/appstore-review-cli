@@ -38,7 +38,10 @@ All options: `appstore-reviews reviews --help`
 
 - **Output streams**: Data goes to stdout, progress/status goes to stderr. Pipe-safe by default.
 - **Review limit**: Apple's RSS feed returns max ~500 reviews per country (10 pages × 50). Use `--pages 10` for maximum coverage.
+- **Deduplication**: Reviews are automatically deduplicated across pages.
+- **Input validation**: `--stars` accepts 1-5, `--pages` accepts 1-10. Invalid values are rejected.
 - **No results?**: "No reviews match the given filters" means filters are too narrow. Try fewer keywords, more days, or higher star ceiling.
+- **Network errors**: If the App Store is unreachable, the CLI prints a clear error to stderr instead of a traceback.
 - **Country codes**: Default is `us`. Common alternatives: `gb`, `de`, `fr`, `jp`, `au`, `ca`, `nl`, `br`, `kr`.
 
 ## How to Analyze (You Do This Yourself)

@@ -62,6 +62,7 @@ appstore-reviews analyze <APP_ID>
     --mode summary|gaps|bugs   Analysis type (default: summary)
     --model qwen3.5:4b         Ollama model to use
     --stars, --days, --keywords, --version, --pages   Same filters as reviews
+    --stats                    Show rating distribution before analysis
     --list-models              Show available Ollama models
 ```
 
@@ -156,7 +157,7 @@ appstore-reviews search "app name"
 **Reviews:**
 ```
 appstore-reviews reviews <APP_ID>
-    --stars 2              Max star rating to include (1-2 = negative only)
+    --stars 2              Max star rating to include (1-5, e.g. 2 = 1-2 stars only)
     --days 30              Only reviews from the last N days
     --keywords crash,bug   Only reviews containing these words (case-insensitive)
     --version 5.0.1        Only reviews for a specific app version
@@ -168,13 +169,27 @@ appstore-reviews reviews <APP_ID>
 
 All filters stack with AND logic — combine `--stars`, `--keywords`, `--days`, and `--version` to narrow results.
 
+**Analyze (requires Ollama):**
+```
+appstore-reviews analyze <APP_ID>
+    --mode summary|gaps|bugs   Analysis type (default: summary)
+    --model qwen3.5:4b         Ollama model (default: qwen3.5:4b)
+    --stars 2              Same filters as reviews
+    --days, --keywords, --version, --pages   Same filters as reviews
+    --stats                Show rating distribution before analysis
+    --list-models          Show available Ollama models and exit
+```
+
 **Country codes:** `us` (default), `gb`, `de`, `fr`, `jp`, `au`, `ca`, `nl`, `br`, `kr`
 
 ## Good to Know
 
 - **Output streams**: Review data goes to stdout, progress/status to stderr. Safe to pipe directly.
 - **Review limit**: Apple's RSS feed returns a max of ~500 reviews per country (10 pages × 50). This is an Apple limitation.
+- **Deduplication**: Reviews are automatically deduplicated across pages, so you always get unique results.
+- **Input validation**: `--stars` accepts 1-5, `--pages` accepts 1-10. Invalid values are rejected with a clear error.
 - **No reviews?** "No reviews match the given filters" means filters are too narrow. Try fewer keywords, more days, or a higher star ceiling.
+- **Network errors**: If the App Store is unreachable, you'll get a clear error message instead of a traceback.
 
 ## Setup
 
