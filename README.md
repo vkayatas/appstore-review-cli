@@ -95,6 +95,54 @@ Shows rating distribution so you can see the big picture before diving into indi
 appstore-reviews reviews 803453959 --stars 2 --format json > reviews.json
 ```
 
+## Usage Examples
+
+Here are real-world scenarios showing how to use the tool:
+
+### Competitor research for a new messaging app
+```bash
+# Find the big players
+appstore-reviews search "messaging" --limit 10
+
+# Pull negative reviews for each
+appstore-reviews reviews 310633997 --stars 2 --days 60 --format text   # WhatsApp
+appstore-reviews reviews 686449807 --stars 2 --days 60 --format text   # Telegram
+
+# Or analyze directly with Ollama
+appstore-reviews analyze 310633997 --stars 2 --days 60 --mode gaps
+```
+
+### Check how a specific app version was received
+```bash
+appstore-reviews reviews 803453959 --version 26.03.20 --stats --format text
+```
+
+### Monitor a specific issue across countries
+```bash
+# Check the same app in multiple regions
+appstore-reviews reviews 803453959 --keywords login,auth,password --country us
+appstore-reviews reviews 803453959 --keywords login,auth,password --country gb
+appstore-reviews reviews 803453959 --keywords login,auth,password --country de
+```
+
+### Get JSON for further processing
+```bash
+# Export to JSON and process with jq
+appstore-reviews reviews 803453959 --stars 2 --format json | jq '.[] | .title'
+
+# Save filtered reviews
+appstore-reviews reviews 803453959 --stars 1 --days 7 --format json > this_week_1star.json
+```
+
+### Ask your AI agent (no Ollama needed)
+With Claude Code, Copilot, or Cursor — just ask in natural language:
+- *"What are the top 5 complaints about Slack this month?"*
+- *"Find crash-related bugs in the latest version of Spotify"*
+- *"Compare Notion vs Obsidian — what do users hate about each?"*
+- *"What features are German Duolingo users requesting?"*
+
+The agent handles the search, filtering, and analysis for you.
+
 ## All Options
 
 **Search:**

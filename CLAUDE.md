@@ -50,3 +50,43 @@ When asked to analyze reviews, use the CLI to fetch them, then reason over the o
 3. **Sentiment Snapshot**: Run with `--stats --pages 5` first to see the rating distribution before drilling into details.
 
 Do NOT pipe output to Ollama or another external LLM. Analyze the review text yourself and present structured findings to the user.
+
+## Example Workflows
+
+**User asks: "What are Slack users complaining about?"**
+```bash
+appstore-reviews search "Slack"
+# Get the app ID → 618783545
+appstore-reviews reviews 618783545 --stars 2 --days 60 --format text --stats
+```
+Then categorize the complaints in your response: UX issues, missing features, bugs, performance. Rank by frequency.
+
+**User asks: "Find crash reports for WhatsApp"**
+```bash
+appstore-reviews search "WhatsApp"
+appstore-reviews reviews <APP_ID> --stars 2 --keywords crash,freeze,error,broken,stuck --format text
+```
+Group by symptom in your response, note affected versions, rank by severity.
+
+**User asks: "Compare Spotify vs Apple Music reviews"**
+```bash
+appstore-reviews search "Spotify"
+appstore-reviews reviews 324684580 --stars 2 --pages 5 --format text
+appstore-reviews search "Apple Music"
+appstore-reviews reviews 1108187390 --stars 2 --pages 5 --format text
+```
+Compare: overlapping complaints (shared industry problems), unique weaknesses per app, which has worse sentiment in key categories.
+
+**User asks: "What do German users think of Duolingo?"**
+```bash
+appstore-reviews search "Duolingo"
+appstore-reviews reviews <APP_ID> --stars 2 --country de --days 90 --format text
+```
+Analyze with awareness that reviews may be in German.
+
+**User asks: "What changed in the latest version of Notion?"**
+```bash
+appstore-reviews search "Notion"
+appstore-reviews reviews <APP_ID> --days 14 --format text --stats
+```
+Look for mentions of recent changes, new bugs, or praise for new features.
