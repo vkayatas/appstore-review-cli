@@ -1,20 +1,72 @@
 # appstore-review-cli
 
-**Scrape App Store reviews. Filter the noise. Feed the signal to your coding agent.**
+**Scrape Apple App Store reviews from the terminal. No API keys, no servers, no setup friction.**
 
-A CLI tool that pulls Apple App Store reviews, filters for negative sentiment, and outputs clean data for AI coding agents (Claude Code, GitHub Copilot, Cursor) to analyze. No API keys. No servers. No MCP overhead. Just a script that outputs text.
+Pull reviews for any iOS app, filter by rating/keywords/date, and get clean output you can pipe into an AI agent or analyze yourself.
 
-## Why This Exists
+## Quick Start
 
-Every AI coding agent can run terminal commands. That's the entire integration. No MCP server to host, no protocol boilerplate, no running processes — just `python3 cli.py reviews <app_id> --stars 2` and the agent gets structured review data it can reason over.
+```bash
+# Install
+uv sync            # or: pip install -e .
 
-**The insight:** Coding agents don't need a special protocol to use external tools. They need a CLI that produces clean output. This is the [cli-anything](https://github.com/nicobailey/cli-anything) philosophy applied to competitive intelligence.
+# 1. Find an app
+appstore-reviews search "Slack"
+#  ID           Rating    Reviews  Name
+#  803453959      4.3⭐  1,247,800  Slack
 
-### What You Get
-- **Competitor gap analysis** — scrape 1-2 star reviews to find what users are begging for
-- **Bug hunting** — filter by keywords like "crash", "freeze", "payment" to surface technical failures
-- **Pre-filtered data** — reduce hundreds of reviews to the signal that matters *before* the LLM sees it (saves tokens, improves quality)
-- **No dependencies on external services** — uses Apple's public RSS feed, no API keys
+# 2. Get negative reviews from the last 30 days
+appstore-reviews reviews 803453959 --stars 2 --days 30
+
+# 3. Filter by keywords
+appstore-reviews reviews 803453959 --keywords crash,freeze,notification
+```
+
+That's it. Three commands to go from app name → filtered reviews.
+
+## What Can You Do With This?
+
+### Find what users hate about a competitor
+```bash
+appstore-reviews reviews 803453959 --stars 2 --days 30 --format text
+```
+Look for patterns: "I wish it had…", "missing feature", "switched to X". These are feature gaps you can build into your own product.
+
+### Hunt for bugs in any app
+```bash
+appstore-reviews reviews 803453959 --keywords crash,bug,freeze,error,slow --stars 2
+```
+Surface the technical failures users are reporting. Group by symptom, identify affected versions.
+
+### Feed reviews to an AI agent for analysis
+```bash
+# Pipe directly to a local model
+appstore-reviews reviews 803453959 --stars 2 --format text \
+  | ollama run qwen3.5:4b "Summarize the top 5 complaints:"
+
+# Or save for later
+appstore-reviews reviews 803453959 --stars 2 --format json > reviews.json
+```
+
+### Get review stats
+```bash
+appstore-reviews reviews 803453959 --stats
+```
+Shows rating distribution so you can see the big picture before diving into individual reviews.
+
+## All Options
+
+```
+appstore-reviews reviews <APP_ID>
+    --stars 2              Max star rating to include (1-2 = negative only)
+    --days 30              Only reviews from the last N days
+    --keywords crash,bug   Only reviews containing these words
+    --version 5.0.1        Only reviews for a specific app version
+    --pages 5              Pages to fetch (1-10, default 3)
+    --format json          Output as json | text | markdown
+    --stats                Show rating distribution
+    --country de           App Store region (default: us)
+```
 
 ## Setup
 
@@ -26,98 +78,36 @@ uv sync
 pip install -e .
 ```
 
-After install, the `appstore-reviews` command is available globally:
-```bash
-appstore-reviews search "Slack"
-appstore-reviews reviews 618783545 --stars 2
-```
-
-Or run directly without installing:
-```bash
-uv run python3 cli.py search "Slack"
-```
-
-### For local LLM users
-```bash
-# Install Ollama: https://ollama.com/download
-ollama run qwen3.5:4b
-```
-
-## Usage
-
-### Find an app
+After install, the `appstore-reviews` command works globally. You can also run directly without installing:
 ```bash
 python3 cli.py search "Slack"
-```
-```
-ID           Rating    Reviews  Name
-------------------------------------------------------------
-803453959      4.3⭐  1,247,800  Slack
+python3 cli.py reviews 803453959 --stars 2
 ```
 
-### Scrape negative reviews
-```bash
-python3 cli.py reviews 803453959 --stars 2 --days 30 --stats
-```
+## Works With Any AI Coding Agent
 
-### Filter by keywords
-```bash
-python3 cli.py reviews 803453959 --keywords crash,freeze,notification --format json
-```
+This tool integrates with coding agents by design — every agent can run terminal commands, and that's the only integration needed.
 
-### All options
-```
-python3 cli.py reviews <APP_ID>
-    --stars 2              Max rating (1-2 stars only)
-    --days 30              Last 30 days
-    --keywords crash,bug   Must contain these words
-    --version 5.0.1        Specific app version
-    --pages 5              Pages to fetch (1-10)
-    --format json          json | text | markdown
-    --stats                Show distribution
-    --country de           App Store region
-```
+| Agent | How it works |
+|-------|-------------|
+| **Claude Code** | Reads `CLAUDE.md` in this repo automatically. Just ask: *"What are Slack users complaining about?"* |
+| **GitHub Copilot** | Discovers `SKILL.md` automatically. Ask about app reviews and it invokes the CLI. |
+| **Cursor / Windsurf / Others** | Point the agent at `appstore-reviews --help` — it figures out the rest. |
 
-## Agent Integration
-
-### Claude Code
-Just use it. Claude Code reads the `CLAUDE.md` in this repo and knows how to call the CLI. Ask it:
-> "What are Slack users complaining about this month?"
-
-### GitHub Copilot (VS Code)
-This repo includes a `SKILL.md`. Copilot auto-discovers it and can invoke the CLI when you ask about app reviews. Works via the `/appinsight` slash command.
-
-### Cursor / Windsurf / Any Agent
-Any agent that can run terminal commands can use this tool. Point it at `cli.py --help` and it figures it out.
-
-### Pipe to LLM
-```bash
-# Direct pipe to a local model
-python3 cli.py reviews 803453959 --stars 2 --format text | ollama run qwen3.5:4b "Summarize the top complaints:"
-
-# Save and analyze
-python3 cli.py reviews 803453959 --stars 2 --format json > reviews.json
-```
+No MCP server, no protocol boilerplate, no running processes. Just a CLI that outputs clean text.
 
 ## Architecture
 
 ```
 appinsight/
-├── __init__.py
-├── cli.py          # CLI logic (entry point for pyproject.toml)
-├── scraper.py      # Apple RSS/JSON feed parser (no API key needed)
+├── cli.py          # CLI logic (entry point)
+├── scraper.py      # Apple RSS/JSON feed parser
 ├── filters.py      # Rating, date, keyword, version filters
-└── formatters.py   # JSON, markdown table, plain text output
-cli.py              # Thin wrapper (`python3 cli.py` still works)
-pyproject.toml      # Modern Python packaging with uv
-SKILL.md            # Copilot Skill definition
+└── formatters.py   # JSON, markdown, plain text output
+cli.py              # Thin wrapper (python3 cli.py still works)
+SKILL.md            # GitHub Copilot skill definition
 CLAUDE.md           # Claude Code integration
 ```
-
-**Design decisions:**
-- **No MCP** — MCP requires a running server process for what is fundamentally "run a command, get text." A CLI is simpler, more portable, and works with every agent.
-- **No embedded LLM** — The coding agent *is* the LLM. This tool's job is to fetch and filter, not analyze. (Local LLM analysis planned for v2.)
-- **Pre-filtering > post-analysis** — Filtering 500 reviews down to 30 keyword-matched 1-star reviews before the LLM sees them produces better analysis than dumping everything.
 
 ## Roadmap
 
