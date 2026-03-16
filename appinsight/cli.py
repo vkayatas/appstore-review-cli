@@ -14,7 +14,7 @@ import requests
 
 from .scraper import search_app, lookup_app, fetch_reviews
 from .filters import apply_filters
-from .formatters import to_json, to_markdown, to_text, summary_stats
+from .formatters import to_json, to_csv, to_markdown, to_text, summary_stats
 from .analyzer import analyze, check_ollama, list_models
 
 
@@ -75,6 +75,8 @@ def cmd_reviews(args):
     # Output
     if args.format == "json":
         print(to_json(reviews))
+    elif args.format == "csv":
+        print(to_csv(reviews), end="")
     elif args.format == "markdown":
         print(to_markdown(reviews))
     else:
@@ -178,7 +180,7 @@ def main():
     p_reviews.add_argument("--version", default=None, help="Filter by app version")
     p_reviews.add_argument("--pages", type=int, default=3, choices=range(1, 11),
                            help="Pages to fetch, 1-10 (default: 3)", metavar="PAGES")
-    p_reviews.add_argument("--format", choices=["text", "json", "markdown"], default="text")
+    p_reviews.add_argument("--format", choices=["text", "json", "csv", "markdown"], default="text")
     p_reviews.add_argument("--stats", action="store_true", help="Show rating distribution stats")
 
     # --- analyze ---

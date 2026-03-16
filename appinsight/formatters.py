@@ -1,5 +1,7 @@
-"""Output formatters — JSON, markdown table, and plain text."""
+"""Output formatters — JSON, CSV, markdown table, and plain text."""
 
+import csv
+import io
 import json
 
 from .scraper import Review
@@ -11,6 +13,24 @@ def to_json(reviews: list[Review], pretty: bool = True) -> str:
     if pretty:
         return json.dumps(data, indent=2, ensure_ascii=False)
     return json.dumps(data, ensure_ascii=False)
+
+
+def to_csv(reviews: list[Review]) -> str:
+    """Format reviews as CSV — ready for pandas.read_csv() or spreadsheet import."""
+    if not reviews:
+        return ""
+
+    fieldnames = ["id", "rating", "date", "version", "author", "title", "content", "vote_sum", "vote_count"]
+    output = io.StringIO()
+    writer = csv.DictWriter(output, fieldnames=fieldnames, quoting=csv.QUOTE_NONNUMERIC)
+    writer.writeheader()
+    for r in reviews:
+        d = r.to_dict()
+        # Shorten date for cleaner CSV
+        if len(d.get("date", "")) >= 10:
+            d["date"] = d["date"][:10]
+        writer.writerow(d)
+    return output.getvalue()
 
 
 def to_markdown(reviews: list[Review]) -> str:

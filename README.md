@@ -135,6 +135,17 @@ appstore-reviews reviews 803453959 --stars 2 --format json | jq '.[] | .title'
 appstore-reviews reviews 803453959 --stars 1 --days 7 --format json > this_week_1star.json
 ```
 
+### Export to CSV for data analysis
+```bash
+# Export to CSV — ready for pandas, Excel, Google Sheets
+appstore-reviews reviews 803453959 --stars 2 --format csv > reviews.csv
+
+# Load in Python
+# import pandas as pd
+# df = pd.read_csv("reviews.csv")
+# df.groupby("version")["rating"].mean()
+```
+
 ### Ask your AI agent (no Ollama needed)
 With Claude Code, Copilot, or Cursor — just ask in natural language:
 - *"What are the top 5 complaints about Slack this month?"*
@@ -162,7 +173,7 @@ appstore-reviews reviews <APP_ID>
     --keywords crash,bug   Only reviews containing these words (case-insensitive)
     --version 5.0.1        Only reviews for a specific app version
     --pages 5              Pages to fetch (1-10, default 3, max useful: 10 = ~500 reviews)
-    --format json          Output as json | text | markdown (default: text)
+    --format json          Output as json | text | csv | markdown (default: text)
     --stats                Show rating distribution
     --country de           App Store region (default: us)
 ```
@@ -199,6 +210,9 @@ uv sync
 
 # Or with pip
 pip install -e .
+
+# With pandas support for data analysis
+pip install -e ".[pandas]"
 ```
 
 After install, the `appstore-reviews` command works globally. You can also run directly without installing:
@@ -206,6 +220,32 @@ After install, the `appstore-reviews` command works globally. You can also run d
 python3 cli.py search "Slack"
 python3 cli.py reviews 803453959 --stars 2
 ```
+
+## Python API for Data Analysis
+
+Use the Python API directly in scripts or Jupyter notebooks — no CLI needed:
+
+```python
+from appinsight import get_reviews, get_reviews_df
+
+# As a list of dicts (no pandas required)
+reviews = get_reviews(618783545, stars=2, days=30)
+print(f"{len(reviews)} negative reviews")
+
+# As a pandas DataFrame
+df = get_reviews_df(618783545, stars=2, pages=5)
+
+# Analysis examples
+df.groupby("version")["rating"].mean()          # avg rating per version
+df.groupby(df["date"].dt.date).size()            # reviews per day
+df[df["content"].str.contains("crash", case=False)]  # find crash mentions
+
+# Search also works
+from appinsight import search
+apps = search("Slack", limit=3)
+```
+
+Requires pandas: `pip install appstore-review-cli[pandas]`
 
 ## Works With Any AI Coding Agent
 
@@ -225,8 +265,9 @@ appinsight/
 ├── cli.py          # CLI logic (entry point)
 ├── scraper.py      # Apple RSS/JSON feed parser
 ├── filters.py      # Rating, date, keyword, version filters
-├── formatters.py   # JSON, markdown, plain text output
-└── analyzer.py     # Ollama integration for built-in analysis
+├── formatters.py   # JSON, CSV, markdown, plain text output
+├── analyzer.py     # Ollama integration for built-in analysis
+└── dataframe.py    # Python API: get_reviews(), get_reviews_df()
 cli.py              # Thin wrapper (python3 cli.py still works)
 SKILL.md            # GitHub Copilot skill definition
 CLAUDE.md           # Claude Code integration
@@ -236,6 +277,5 @@ CLAUDE.md           # Claude Code integration
 
 - [ ] Google Play Store support
 - [ ] Multi-app comparison (`compare` command)
-- [ ] Export to CSV
 - [ ] Version diff (sentiment changes between releases)
 - [ ] More analysis modes (trend detection, sentiment over time)

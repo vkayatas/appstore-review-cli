@@ -17,6 +17,9 @@ dependencies = [
     "requests>=2.28",
 ]
 
+[project.optional-dependencies]
+pandas = ["pandas>=1.5"]
+
 [project.scripts]
 appstore-reviews = "appinsight.cli:main"
 

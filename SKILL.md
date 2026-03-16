@@ -47,7 +47,7 @@ If not installed, use: `python3 cli.py reviews <APP_ID> [options]`
 - `--keywords crash,freeze,bug` — Only reviews mentioning these words (case-insensitive, matches title or content)
 - `--version 5.0.1` — Only reviews for a specific version
 - `--pages 5` — Fetch more pages, 1-10 (default: 3, max useful: 10 = ~500 reviews)
-- `--format json|text|markdown` — Output format (default: text)
+- `--format json|text|csv|markdown` — Output format (default: text). Use `csv` for pandas/spreadsheet analysis.
 - `--stats` — Show rating distribution (printed to stderr, won't pollute data output)
 - `--country us` — App Store region. Common codes: `us`, `gb`, `de`, `fr`, `jp`, `au`, `ca`, `nl`, `br`, `kr`
 
@@ -106,4 +106,24 @@ Then compare:
 **"Check reviews for a specific country"**
 ```bash
 appstore-reviews reviews 803453959 --stars 2 --country de --format text
+```
+
+## Python API
+
+For users who want to work with reviews as data (scripts, notebooks):
+```python
+from appinsight import get_reviews, get_reviews_df
+
+# As list of dicts (no pandas needed)
+reviews = get_reviews(618783545, stars=2, days=30)
+
+# As pandas DataFrame (requires: pip install appstore-review-cli[pandas])
+df = get_reviews_df(618783545, stars=2, pages=5)
+df.groupby("version")["rating"].mean()
+df[df["content"].str.contains("crash", case=False)]
+```
+
+Or export CSV from the CLI:
+```bash
+appstore-reviews reviews 618783545 --stars 2 --format csv > reviews.csv
 ```

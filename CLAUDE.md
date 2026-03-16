@@ -22,6 +22,11 @@ Fetch negative reviews:
 appstore-reviews reviews <APP_ID> --stars 2 --days 30 --format text
 ```
 
+Export to CSV for data analysis:
+```bash
+appstore-reviews reviews <APP_ID> --stars 2 --format csv > reviews.csv
+```
+
 Fetch reviews with keyword filter:
 ```bash
 appstore-reviews reviews <APP_ID> --keywords crash,bug,slow --format text
@@ -93,3 +98,18 @@ appstore-reviews search "Notion"
 appstore-reviews reviews <APP_ID> --days 14 --format text --stats
 ```
 Look for mentions of recent changes, new bugs, or praise for new features.
+
+## Python API
+
+For programmatic use (e.g., in a script or notebook the user is building):
+```python
+from appinsight import get_reviews, get_reviews_df
+
+# As dicts (no pandas needed)
+reviews = get_reviews(618783545, stars=2, days=30)
+
+# As pandas DataFrame
+df = get_reviews_df(618783545, stars=2, pages=5)
+df.groupby("version")["rating"].mean()
+```
+Requires: `pip install appstore-review-cli[pandas]`
