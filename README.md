@@ -82,37 +82,53 @@ appstore-reviews reviews 803453959 --stars 2 --format text | your-llm "Summarize
 
 ## All Options
 
-```
-appstore-reviews search "app name"
-    --limit 10              Max results (default: 5)
-    --format json           Output as JSON instead of table
-    --country de            App Store region (default: us)
+### `search` — Find an app by name
 
-appstore-reviews reviews <APP_ID>
-    --stars 2               Max star rating (1-5). e.g. 2 = 1-2 stars
-    --min-stars 3           Min star rating (1-5). e.g. --min-stars 3 --stars 3 = only 3★
-    --days 30               Only reviews from the last N days
-    --keywords crash,bug    Only reviews containing these words (case-insensitive)
-    --version 5.0.1         Only reviews for a specific app version
-    --pages 5               Pages to fetch (1-10, default 3; 10 = ~500 reviews max)
-    --format text           Output as text | json | csv | markdown
-    --sort votes            Sort by: date (newest) | rating (lowest) | votes (most helpful)
-    --stats                 Show rating distribution
-    --country de            App Store region (default: us)
+| Flag | Description |
+|------|-------------|
+| `--limit 10` | Max results (default: 5) |
+| `--format json` | Output as JSON instead of table |
+| `--country de` | App Store region (default: `us`) |
 
-appstore-reviews analyze <APP_ID>
-    --mode summary          Analysis type: summary | gaps | bugs
-    --model qwen3.5:4b      Ollama model to use
-    (same filters as reviews: --stars, --min-stars, --days, --keywords, etc.)
-    --list-models           Show available Ollama models
+### `reviews <APP_ID>` — Fetch and filter reviews
 
-appstore-reviews setup <agent>
-    copilot | claude | cursor | windsurf
-    --force                 Overwrite existing file
-    --append                Append to existing file
-```
+| Flag | Description |
+|------|-------------|
+| `--stars 2` | Max star rating to include (1-5). `2` = 1-2 stars |
+| `--min-stars 3` | Min star rating (1-5). `--min-stars 3 --stars 3` = only 3★ |
+| `--days 30` | Only reviews from the last N days |
+| `--keywords crash,bug` | Only reviews containing these words (case-insensitive) |
+| `--version 5.0.1` | Only reviews for a specific app version |
+| `--pages 5` | Pages to fetch (1-10, default 3; 10 ≈ 500 reviews) |
+| `--format text` | Output as `text` \| `json` \| `csv` \| `markdown` |
+| `--sort votes` | Sort by: `date` (newest) \| `rating` (lowest) \| `votes` (most helpful) |
+| `--stats` | Show rating distribution |
+| `--country de` | App Store region (default: `us`) |
 
-All filters stack with AND logic. Country codes: `us`, `gb`, `de`, `fr`, `jp`, `au`, `ca`, `nl`, `br`, `kr`.
+All filters stack with AND logic.
+
+### `analyze <APP_ID>` — LLM analysis via Ollama
+
+| Flag | Description |
+|------|-------------|
+| `--mode summary` | Analysis type: `summary` \| `gaps` \| `bugs` |
+| `--model qwen3.5:4b` | Ollama model to use |
+| `--list-models` | Show available Ollama models |
+
+Plus all the same filters as `reviews` (`--stars`, `--min-stars`, `--days`, `--keywords`, `--version`, `--pages`, `--sort`, `--stats`, `--country`).
+
+### `setup <agent>` — Install agent instructions
+
+| Argument / Flag | Description |
+|-----------------|-------------|
+| `copilot` | Creates `SKILL.md` for GitHub Copilot |
+| `claude` | Creates `CLAUDE.md` for Claude Code |
+| `cursor` | Creates `.cursor/rules/appstore-reviews.md` |
+| `windsurf` | Creates `.windsurfrules` |
+| `--force` | Overwrite existing file |
+| `--append` | Append to existing file |
+
+**Country codes:** `us` (default), `gb`, `de`, `fr`, `jp`, `au`, `ca`, `nl`, `br`, `kr`
 
 ## Python API
 
