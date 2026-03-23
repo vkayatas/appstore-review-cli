@@ -32,68 +32,39 @@ Three commands to go from app name → filtered reviews.
 
 ### Using with an AI coding agent
 
-After installing, your agent doesn't know the CLI exists yet. You need to add a short instruction file to your project:
-
-<details>
-<summary><strong>Claude Code</strong></summary>
-
-Claude Code reads `CLAUDE.md` from the project root on every session. Copy the instruction file into your project:
+After installing, run one command to teach your agent about the CLI:
 
 ```bash
-# From your project directory
-curl -sL https://raw.githubusercontent.com/vkayatas/appstore-review-cli/master/CLAUDE.md -o CLAUDE.md
+# GitHub Copilot
+appstore-reviews setup copilot
+
+# Claude Code
+appstore-reviews setup claude
+
+# Cursor
+appstore-reviews setup cursor
+
+# Windsurf
+appstore-reviews setup windsurf
 ```
 
-Or if you already have a `CLAUDE.md`, append it:
-```bash
-echo "" >> CLAUDE.md
-curl -sL https://raw.githubusercontent.com/vkayatas/appstore-review-cli/master/CLAUDE.md >> CLAUDE.md
-```
+This writes an instruction file into your project that the agent discovers automatically. That's it — now just ask:
 
-That's it. Now Claude knows every command, filter, and workflow. Ask:
 ```
 You: "What are Slack users complaining about this month?"
 ```
-</details>
 
 <details>
-<summary><strong>GitHub Copilot</strong></summary>
+<summary>What does this do exactly?</summary>
 
-Copilot discovers `SKILL.md` files in your workspace as skills. Copy it into your project:
+| Command | What it creates | Why |
+|---------|----------------|-----|
+| `setup copilot` | `SKILL.md` in project root | Copilot auto-discovers this as a workspace skill |
+| `setup claude` | `CLAUDE.md` in project root | Claude Code reads this on every session |
+| `setup cursor` | `.cursor/rules/appstore-reviews.md` | Cursor reads this as agent rules |
+| `setup windsurf` | `.windsurfrules` in project root | Windsurf reads this as agent rules |
 
-```bash
-# From your project directory
-curl -sL https://raw.githubusercontent.com/vkayatas/appstore-review-cli/master/SKILL.md -o SKILL.md
-```
-
-Or add to your existing GitHub Copilot instructions:
-```bash
-mkdir -p .github
-curl -sL https://raw.githubusercontent.com/vkayatas/appstore-review-cli/master/SKILL.md >> .github/copilot-instructions.md
-```
-
-Now Copilot invokes the CLI when you ask about app reviews:
-```
-You: "Find crash reports for WhatsApp in the last 30 days"
-```
-</details>
-
-<details>
-<summary><strong>Cursor / Windsurf / Others</strong></summary>
-
-These agents don't auto-discover instruction files. Add the CLI docs to your agent's rules:
-
-```bash
-# Cursor
-mkdir -p .cursor/rules
-curl -sL https://raw.githubusercontent.com/vkayatas/appstore-review-cli/master/CLAUDE.md -o .cursor/rules/appstore-reviews.md
-
-# Windsurf
-curl -sL https://raw.githubusercontent.com/vkayatas/appstore-review-cli/master/CLAUDE.md -o .windsurfrules
-```
-
-Or just tell the agent once per session:
-> *"I have `appstore-reviews` CLI installed. Run `appstore-reviews --help` to learn it, then fetch Slack reviews."*
+The file teaches the agent every command, filter, and analysis workflow. Use `--force` to overwrite an existing file, or `--append` to add to one.
 </details>
 
 <details>
@@ -114,7 +85,7 @@ appstore-reviews reviews 803453959 --stars 2 --format text | your-llm "Summarize
 
 If you're using Claude Code, GitHub Copilot, Cursor, or another AI coding agent — **you don't need Ollama**. The agent itself is the LLM. It can run CLI commands and reason over the output directly.
 
-**How does the agent know about this tool?** You copy an instruction file into your project (see [Quick Start above](#using-with-an-ai-coding-agent)). This file teaches the agent every command, filter, and analysis workflow. Once it's there, just ask:
+**How does the agent know about this tool?** You run `appstore-reviews setup <agent>` once in your project (see [Quick Start above](#using-with-an-ai-coding-agent)). This writes an instruction file that teaches the agent every command, filter, and analysis workflow. Once it's there, just ask:
 
 > "What are Slack users complaining about this month?"
 
@@ -356,17 +327,21 @@ uv run pytest
 
 ## Works With Any AI Coding Agent
 
-Agents don't magically know this tool exists — you need to add an instruction file to your project. Each agent has a different discovery mechanism:
+After `pip install appstore-review-cli`, run one setup command from your project directory:
 
-| Agent | What to do | File |
-|-------|------------|------|
-| **Claude Code** | Copy [`CLAUDE.md`](CLAUDE.md) into your project root | Auto-read on every session |
-| **GitHub Copilot** | Copy [`SKILL.md`](SKILL.md) into your project root | Auto-discovered as workspace skill |
-| **Cursor** | Copy `CLAUDE.md` into `.cursor/rules/` | Read as agent rules |
-| **Windsurf** | Copy `CLAUDE.md` to `.windsurfrules` | Read as agent rules |
-| **No agent?** | No file needed | Use `analyze` with Ollama, or pipe to any LLM |
+```bash
+appstore-reviews setup copilot    # → creates SKILL.md
+appstore-reviews setup claude     # → creates CLAUDE.md
+appstore-reviews setup cursor     # → creates .cursor/rules/appstore-reviews.md
+appstore-reviews setup windsurf   # → creates .windsurfrules
+```
 
-See [Quick Start → Using with an AI coding agent](#using-with-an-ai-coding-agent) for copy-paste commands.
+The agent discovers the file automatically and knows every command. No manual copy-paste needed.
+
+| Option | What it does |
+|--------|--------------|
+| `--force` | Overwrite if the file already exists |
+| `--append` | Append to an existing file instead of overwriting |
 
 ## Architecture
 
@@ -377,7 +352,8 @@ appinsight/
 ├── filters.py      # Rating, date, keyword, version filters
 ├── formatters.py   # JSON, CSV, markdown, plain text output
 ├── analyzer.py     # Ollama integration for built-in analysis
-└── dataframe.py    # Python API: get_reviews(), get_reviews_df()
+├── dataframe.py    # Python API: get_reviews(), get_reviews_df()
+└── setup.py        # Agent setup: appstore-reviews setup <agent>
 cli.py              # Thin wrapper (python3 cli.py still works)
 SKILL.md            # GitHub Copilot skill definition
 CLAUDE.md           # Claude Code integration

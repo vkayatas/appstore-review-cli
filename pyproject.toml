@@ -38,6 +38,10 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["appinsight"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"appinsight/instructions/claude.md" = "appinsight/instructions/claude.md"
+"appinsight/instructions/copilot.md" = "appinsight/instructions/copilot.md"
+
 [dependency-groups]
 dev = [
     "pytest>=9.0.2",

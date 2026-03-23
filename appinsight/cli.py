@@ -16,6 +16,7 @@ from .scraper import search_app, lookup_app, fetch_reviews
 from .filters import apply_filters
 from .formatters import to_json, to_csv, to_markdown, to_text, summary_stats
 from .analyzer import analyze, check_ollama, list_models
+from .setup import cmd_setup, AGENTS
 
 
 def cmd_search(args):
@@ -211,6 +212,13 @@ def main():
     p_analyze.add_argument("--stats", action="store_true", help="Show rating distribution before analysis")
     p_analyze.add_argument("--list-models", action="store_true", help="List available Ollama models and exit")
 
+    # --- setup ---
+    p_setup = sub.add_parser("setup", help="Install agent instruction files into your project")
+    p_setup.add_argument("agent", choices=list(AGENTS.keys()),
+                         help="Agent to set up: copilot, claude, cursor, windsurf")
+    p_setup.add_argument("--force", action="store_true", help="Overwrite existing files")
+    p_setup.add_argument("--append", action="store_true", help="Append to existing files instead of overwriting")
+
     args = parser.parse_args()
 
     if args.command == "search":
@@ -221,6 +229,8 @@ def main():
         if args.app_id is None and not args.list_models:
             p_analyze.error("app_id is required (unless using --list-models)")
         cmd_analyze(args)
+    elif args.command == "setup":
+        cmd_setup(args)
 
 
 if __name__ == "__main__":
