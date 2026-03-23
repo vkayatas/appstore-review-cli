@@ -12,6 +12,16 @@ You have access to a CLI tool called `appstore-reviews` that scrapes Apple App S
 
 **You ARE the analyzer.** Fetch reviews with the CLI commands below, then analyze them directly in your response. Do NOT suggest the user install Ollama or run the `analyze` command — you have the intelligence to do the analysis yourself.
 
+## Prerequisites
+
+The tool must be installed before use. If `appstore-reviews` is not found, install it first:
+```bash
+pip install appstore-review-cli
+```
+For Google Play support: `pip install "appstore-review-cli[google]"`
+
+**Always use the `appstore-reviews` CLI command in the terminal. Do NOT use the Python API or import statements — use the bash commands shown below.**
+
 ## Important Behavior
 
 - **Output streams**: Data goes to stdout, progress/status messages go to stderr. Use `2>/dev/null` to suppress status messages when piping.
@@ -32,8 +42,6 @@ You have access to a CLI tool called `appstore-reviews` that scrapes Apple App S
 ```bash
 appstore-reviews search "app name"
 ```
-If not installed, use: `python3 cli.py search "app name"`
-
 Returns app IDs, names, ratings. Use this first to find the numeric app ID.
 
 **Options:**
@@ -46,7 +54,6 @@ Returns app IDs, names, ratings. Use this first to find the numeric app ID.
 ```bash
 appstore-reviews reviews <APP_ID> [options]
 ```
-If not installed, use: `python3 cli.py reviews <APP_ID> [options]`
 
 **Options (all optional, filters stack with AND logic):**
 - `--stars 2` — Max star rating to include (1-2 stars). Valid range: 1-5.
@@ -150,9 +157,9 @@ appstore-reviews trend 803453959 --pages 5
 ```
 The trend command shows weekly averages with sparklines. Use `--period month` for broader view.
 
-## Python API
+## Python API (for scripts/notebooks only)
 
-For users who want to work with reviews as data (scripts, notebooks):
+Only use this if the user is explicitly writing Python code or a notebook — otherwise always use the CLI commands above.
 ```python
 from appinsight import get_reviews, get_reviews_df
 
