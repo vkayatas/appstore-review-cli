@@ -1,5 +1,8 @@
 # appstore-review-cli
 
+[![CI](https://github.com/vkayatas/appstore-review-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/vkayatas/appstore-review-cli/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/appstore-review-cli)](https://pypi.org/project/appstore-review-cli/)
+
 **Turn App Store and Google Play reviews into product intelligence - from the terminal or through your AI coding agent.**
 
 App store reviews are the largest public dataset of unfiltered user feedback. But reading them on the store websites is painful: no filtering, no export, no way to search across versions or countries. This tool fixes that.
@@ -18,12 +21,12 @@ No API keys. No accounts. No servers. Just `pip install` and go.
 ## Install
 
 ```bash
-pip install git+https://github.com/vkayatas/appstore-review-cli.git
+pip install appstore-review-cli
 ```
 
 For Google Play support:
 ```bash
-pip install "appstore-review-cli[google] @ git+https://github.com/vkayatas/appstore-review-cli.git"
+pip install "appstore-review-cli[google]"
 ```
 
 ## Quick Start
@@ -258,3 +261,4 @@ uv run pytest
 - [x] Version diff (sentiment changes between releases)
 - [x] Rating trend over time (weekly/monthly)
 - [x] Export compare/version-diff/trend to JSON/CSV
+- [x] PyPI publish with GitHub Actions CI
