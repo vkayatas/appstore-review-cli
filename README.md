@@ -31,11 +31,19 @@ Three commands to go from app name → filtered reviews.
 
 ### Path 1: Using an AI coding agent (no extra setup)
 
-If you're using Claude Code, GitHub Copilot, Cursor, or any AI coding agent — **you don't need Ollama**. The agent IS the LLM. Just ask it to fetch and analyze:
+If you're using Claude Code, GitHub Copilot, Cursor, or another AI coding agent — **you don't need Ollama**. The agent itself is the LLM. It can run CLI commands and reason over the output directly.
+
+**How does the agent know about this tool?** This repo includes instruction files that agents discover automatically:
+
+- **Claude Code** reads [`CLAUDE.md`](CLAUDE.md) from the repo root — it contains the full CLI reference and analysis workflows.
+- **GitHub Copilot** discovers [`SKILL.md`](SKILL.md) — a skill definition that teaches it when and how to invoke the CLI.
+- **Cursor / Windsurf / Others** — point the agent at `appstore-reviews --help`, or add the CLI docs to your agent's context manually.
+
+Once the agent knows the CLI exists, just ask:
 
 > "What are Slack users complaining about this month?"
 
-The agent runs `appstore-reviews reviews ...` to get the data, then analyzes it directly. That's the entire workflow. The review data is clean text the agent can reason over.
+The agent runs `appstore-reviews reviews ...` to get the data, then analyzes it directly. No extra tools needed.
 
 ### Path 2: Standalone with Ollama (built-in analysis)
 
@@ -249,13 +257,13 @@ Requires pandas: `pip install appstore-review-cli[pandas]`
 
 ## Works With Any AI Coding Agent
 
-This tool integrates with coding agents by design — every agent can run terminal commands, and that's the only integration needed. The agent fetches the reviews, then analyzes them with its own intelligence. No Ollama required.
+Agents don't magically know this tool exists — they learn about it from instruction files in this repo. Each file is tailored to how that agent discovers context:
 
-| Agent | How it works |
+| Agent | Discovery mechanism |
 |-------|-------------|
-| **Claude Code** | Reads `CLAUDE.md` in this repo automatically. Just ask: *"What are Slack users complaining about?"* |
-| **GitHub Copilot** | Discovers `SKILL.md` automatically. Ask about app reviews and it invokes the CLI. |
-| **Cursor / Windsurf / Others** | Point the agent at `appstore-reviews --help` — it figures out the rest. |
+| **Claude Code** | Reads [`CLAUDE.md`](CLAUDE.md) automatically on startup. Just ask: *"What are Slack users complaining about?"* |
+| **GitHub Copilot** | Discovers [`SKILL.md`](SKILL.md) as a workspace skill. Ask about app reviews and it invokes the CLI. |
+| **Cursor / Windsurf / Others** | No auto-discovery. Point the agent at `appstore-reviews --help` or paste the CLI docs into your system prompt. |
 | **No agent?** | Use `appstore-reviews analyze` with Ollama, or pipe output to any LLM. |
 
 ## Architecture
