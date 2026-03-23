@@ -1,367 +1,157 @@
 # appstore-review-cli
 
-**Scrape Apple App Store reviews from the terminal. No API keys, no servers, no setup friction.**
+**Turn App Store reviews into product intelligence — from the terminal or through your AI coding agent.**
 
-Pull reviews for any iOS app, filter by rating/keywords/date, and either let your AI agent analyze them or use the built-in Ollama-powered analysis.
+App Store reviews are the largest public dataset of unfiltered user feedback. But reading them on the App Store website is painful: no filtering, no export, no way to search across versions or countries. This tool fixes that.
+
+## Why Use This?
+
+- **Competitor research**: Pull 1-star reviews for any app and find the feature gaps your product can fill.
+- **Bug triage**: Filter reviews by keywords like "crash", "freeze", "login" and group by app version.
+- **Version monitoring**: Check how users reacted to a specific release before your next sprint.
+- **Multi-country insights**: Same app, different markets — compare complaints across `us`, `de`, `jp`, etc.
+- **AI-native**: Your coding agent (Copilot, Claude Code, Cursor) can fetch and analyze reviews in natural language. No Ollama needed — the agent IS the LLM.
+
+No API keys. No accounts. No servers. Just `pip install` and go.
+
+## Install
+
+```bash
+pip install git+https://github.com/vkayatas/appstore-review-cli.git
+```
 
 ## Quick Start
 
 ```bash
-# Install from PyPI
-pip install appstore-review-cli
-
-# Or install from source with uv
-uv sync            # or: pip install -e .
-
-# 1. Find an app (returns the numeric ID you need)
+# Find an app
 appstore-reviews search "Slack"
-#  ID           Rating    Reviews  Name
-#  803453959      4.3⭐  1,247,800  Slack
 
-# 2. Get negative reviews from the last 30 days
+# Get negative reviews from the last 30 days
 appstore-reviews reviews 803453959 --stars 2 --days 30
 
-# 3. Filter by keywords
-appstore-reviews reviews 803453959 --keywords crash,freeze,notification
+# Filter by keywords
+appstore-reviews reviews 803453959 --keywords crash,freeze --stars 2
 
-# 4. Combine filters (they stack with AND logic)
-appstore-reviews reviews 803453959 --stars 2 --days 30 --keywords crash,freeze
-```
+# Sort by most helpful
+appstore-reviews reviews 803453959 --stars 2 --sort votes
 
-Three commands to go from app name → filtered reviews.
+# Get only 3-star reviews (the nuanced ones)
+appstore-reviews reviews 803453959 --min-stars 3 --stars 3
 
-### Using with an AI coding agent
-
-After installing, run one command to teach your agent about the CLI:
-
-```bash
-# GitHub Copilot
-appstore-reviews setup copilot
-
-# Claude Code
-appstore-reviews setup claude
-
-# Cursor
-appstore-reviews setup cursor
-
-# Windsurf
-appstore-reviews setup windsurf
-```
-
-This writes an instruction file into your project that the agent discovers automatically. That's it — now just ask:
-
-```
-You: "What are Slack users complaining about this month?"
-```
-
-<details>
-<summary>What does this do exactly?</summary>
-
-| Command | What it creates | Why |
-|---------|----------------|-----|
-| `setup copilot` | `SKILL.md` in project root | Copilot auto-discovers this as a workspace skill |
-| `setup claude` | `CLAUDE.md` in project root | Claude Code reads this on every session |
-| `setup cursor` | `.cursor/rules/appstore-reviews.md` | Cursor reads this as agent rules |
-| `setup windsurf` | `.windsurfrules` in project root | Windsurf reads this as agent rules |
-
-The file teaches the agent every command, filter, and analysis workflow. Use `--force` to overwrite an existing file, or `--append` to add to one.
-</details>
-
-<details>
-<summary><strong>No agent? Use Ollama or pipe to any LLM</strong></summary>
-
-```bash
-# Built-in analysis with a local LLM
-appstore-reviews analyze 803453959 --stars 2 --mode summary
-
-# Or pipe to any tool you want
-appstore-reviews reviews 803453959 --stars 2 --format text | your-llm "Summarize:"
-```
-</details>
-
-## Two Ways to Analyze Reviews
-
-### Path 1: Using an AI coding agent (no extra setup)
-
-If you're using Claude Code, GitHub Copilot, Cursor, or another AI coding agent — **you don't need Ollama**. The agent itself is the LLM. It can run CLI commands and reason over the output directly.
-
-**How does the agent know about this tool?** You run `appstore-reviews setup <agent>` once in your project (see [Quick Start above](#using-with-an-ai-coding-agent)). This writes an instruction file that teaches the agent every command, filter, and analysis workflow. Once it's there, just ask:
-
-> "What are Slack users complaining about this month?"
-
-The agent runs `appstore-reviews reviews ...` to get the data, then analyzes it directly. No extra tools needed.
-
-### Path 2: Standalone with Ollama (built-in analysis)
-
-If you're working without an AI agent, or want analysis directly in the terminal:
-
-```bash
-# Install Ollama: https://ollama.com/download
-ollama pull qwen3.5:4b
-
-# Summarize negative reviews
-appstore-reviews analyze 803453959 --stars 2 --mode summary
-
-# Find feature gaps
-appstore-reviews analyze 803453959 --stars 2 --mode gaps
-
-# Find bugs and crashes
-appstore-reviews analyze 803453959 --stars 2 --mode bugs --keywords crash,freeze
-```
-
-The `analyze` command fetches reviews, applies your filters, and sends them to a local Ollama model for analysis. No data leaves your machine.
-
-```
-appstore-reviews analyze <APP_ID>
-    --mode summary|gaps|bugs   Analysis type (default: summary)
-    --model qwen3.5:4b         Ollama model to use
-    --stars, --days, --keywords, --version, --pages   Same filters as reviews
-    --stats                    Show rating distribution before analysis
-    --list-models              Show available Ollama models
-```
-
-**Don't have Ollama?** You can always pipe raw output to any LLM you prefer:
-```bash
-appstore-reviews reviews 803453959 --stars 2 --format text | your-llm-command "Summarize:"
-```
-
-## What Can You Do With This?
-
-### Find what users hate about a competitor
-```bash
-appstore-reviews reviews 803453959 --stars 2 --days 30 --format text
-```
-Look for patterns: "I wish it had…", "missing feature", "switched to X". These are feature gaps you can build into your own product.
-
-### Hunt for bugs in any app
-```bash
-appstore-reviews reviews 803453959 --keywords crash,bug,freeze,error,slow --stars 2
-```
-Surface the technical failures users are reporting. Group by symptom, identify affected versions.
-
-### Get review stats
-```bash
-appstore-reviews reviews 803453959 --stats
-```
-Shows rating distribution so you can see the big picture before diving into individual reviews.
-
-### Save for later
-```bash
+# Export to CSV or JSON
+appstore-reviews reviews 803453959 --stars 2 --format csv > reviews.csv
 appstore-reviews reviews 803453959 --stars 2 --format json > reviews.json
 ```
 
-## Usage Examples
+## Agent Integration
 
-Here are real-world scenarios showing how to use the tool:
+One command to teach your AI coding agent every command, filter, and workflow:
 
-### Competitor research for a new messaging app
 ```bash
-# Find the big players
-appstore-reviews search "messaging" --limit 10
-
-# Pull negative reviews for each
-appstore-reviews reviews 310633997 --stars 2 --days 60 --format text   # WhatsApp
-appstore-reviews reviews 686449807 --stars 2 --days 60 --format text   # Telegram
-
-# Or analyze directly with Ollama
-appstore-reviews analyze 310633997 --stars 2 --days 60 --mode gaps
+appstore-reviews setup copilot      # GitHub Copilot → creates SKILL.md
+appstore-reviews setup claude       # Claude Code    → creates CLAUDE.md
+appstore-reviews setup cursor       # Cursor         → creates .cursor/rules/appstore-reviews.md
+appstore-reviews setup windsurf     # Windsurf       → creates .windsurfrules
 ```
 
-### Check how a specific app version was received
-```bash
-appstore-reviews reviews 803453959 --version 26.03.20 --stats --format text
-```
+Then just ask in natural language:
 
-### Monitor a specific issue across countries
-```bash
-# Check the same app in multiple regions
-appstore-reviews reviews 803453959 --keywords login,auth,password --country us
-appstore-reviews reviews 803453959 --keywords login,auth,password --country gb
-appstore-reviews reviews 803453959 --keywords login,auth,password --country de
-```
-
-### Get JSON for further processing
-```bash
-# Export to JSON and process with jq
-appstore-reviews reviews 803453959 --stars 2 --format json | jq '.[] | .title'
-
-# Save filtered reviews
-appstore-reviews reviews 803453959 --stars 1 --days 7 --format json > this_week_1star.json
-```
-
-### Export to CSV for data analysis
-```bash
-# Export to CSV — ready for pandas, Excel, Google Sheets
-appstore-reviews reviews 803453959 --stars 2 --format csv > reviews.csv
-
-# Load in Python
-# import pandas as pd
-# df = pd.read_csv("reviews.csv")
-# df.groupby("version")["rating"].mean()
-```
-
-### Ask your AI agent (no Ollama needed)
-With Claude Code, Copilot, or Cursor — just ask in natural language:
-- *"What are the top 5 complaints about Slack this month?"*
-- *"Find crash-related bugs in the latest version of Spotify"*
+- *"What are the top complaints about Slack this month?"*
+- *"Find crash reports for WhatsApp in the last 30 days"*
 - *"Compare Notion vs Obsidian — what do users hate about each?"*
 - *"What features are German Duolingo users requesting?"*
 
-The agent handles the search, filtering, and analysis for you.
+The agent runs the CLI, fetches reviews, and analyzes them directly. No Ollama, no extra setup.
+
+Use `--force` to overwrite an existing file, `--append` to add to one.
+
+### Without an agent
+
+Use the built-in Ollama analysis, or pipe to any LLM:
+
+```bash
+# Ollama (local, private)
+ollama pull qwen3.5:4b
+appstore-reviews analyze 803453959 --stars 2 --mode summary
+appstore-reviews analyze 803453959 --stars 2 --mode gaps
+appstore-reviews analyze 803453959 --stars 2 --mode bugs --keywords crash,freeze
+
+# Or pipe raw output to any tool
+appstore-reviews reviews 803453959 --stars 2 --format text | your-llm "Summarize:"
+```
 
 ## All Options
 
-**Search:**
 ```
 appstore-reviews search "app name"
-    --limit 10             Max results (default: 5)
-    --format json          Output as json instead of table
-    --country de           App Store region (default: us)
-```
+    --limit 10              Max results (default: 5)
+    --format json           Output as JSON instead of table
+    --country de            App Store region (default: us)
 
-**Reviews:**
-```
 appstore-reviews reviews <APP_ID>
-    --stars 2              Max star rating to include (1-5, e.g. 2 = 1-2 stars only)
-    --min-stars 3          Min star rating to include (1-5, combine with --stars for exact range)
-    --days 30              Only reviews from the last N days
-    --keywords crash,bug   Only reviews containing these words (case-insensitive)
-    --version 5.0.1        Only reviews for a specific app version
-    --pages 5              Pages to fetch (1-10, default 3, max useful: 10 = ~500 reviews)
-    --format json          Output as json | text | csv | markdown (default: text)
-    --sort votes           Sort by: date (newest), rating (lowest), votes (most helpful)
-    --stats                Show rating distribution
-    --country de           App Store region (default: us)
-```
+    --stars 2               Max star rating (1-5). e.g. 2 = 1-2 stars
+    --min-stars 3           Min star rating (1-5). e.g. --min-stars 3 --stars 3 = only 3★
+    --days 30               Only reviews from the last N days
+    --keywords crash,bug    Only reviews containing these words (case-insensitive)
+    --version 5.0.1         Only reviews for a specific app version
+    --pages 5               Pages to fetch (1-10, default 3; 10 = ~500 reviews max)
+    --format text           Output as text | json | csv | markdown
+    --sort votes            Sort by: date (newest) | rating (lowest) | votes (most helpful)
+    --stats                 Show rating distribution
+    --country de            App Store region (default: us)
 
-All filters stack with AND logic — combine `--stars`, `--min-stars`, `--keywords`, `--days`, and `--version` to narrow results.
-
-Examples:
-- `--stars 2` → 1-2 star reviews
-- `--min-stars 3 --stars 3` → only 3-star reviews
-- `--min-stars 4` → 4-5 star reviews
-- `--sort votes` → most helpful reviews first
-
-**Analyze (requires Ollama):**
-```
 appstore-reviews analyze <APP_ID>
-    --mode summary|gaps|bugs   Analysis type (default: summary)
-    --model qwen3.5:4b         Ollama model (default: qwen3.5:4b)
-    --stars 2              Same filters as reviews
-    --days, --keywords, --version, --pages   Same filters as reviews
-    --sort date|rating|votes   Sort order (same as reviews)
-    --stats                Show rating distribution before analysis
-    --list-models          Show available Ollama models and exit
+    --mode summary          Analysis type: summary | gaps | bugs
+    --model qwen3.5:4b      Ollama model to use
+    (same filters as reviews: --stars, --min-stars, --days, --keywords, etc.)
+    --list-models           Show available Ollama models
+
+appstore-reviews setup <agent>
+    copilot | claude | cursor | windsurf
+    --force                 Overwrite existing file
+    --append                Append to existing file
 ```
 
-**Country codes:** `us` (default), `gb`, `de`, `fr`, `jp`, `au`, `ca`, `nl`, `br`, `kr`
+All filters stack with AND logic. Country codes: `us`, `gb`, `de`, `fr`, `jp`, `au`, `ca`, `nl`, `br`, `kr`.
+
+## Python API
+
+```python
+from appinsight import get_reviews, get_reviews_df, search
+
+# Search
+apps = search("Slack", limit=3)
+
+# As dicts (no pandas needed)
+reviews = get_reviews(618783545, stars=2, days=30)
+
+# As pandas DataFrame
+df = get_reviews_df(618783545, stars=2, pages=5)
+df.groupby("version")["rating"].mean()
+df[df["content"].str.contains("crash", case=False)]
+```
+
+Install with pandas: `pip install appstore-review-cli[pandas]`
 
 ## Good to Know
 
-- **Output streams**: Review data goes to stdout, progress/status to stderr. Safe to pipe directly.
-- **Review limit**: Apple's RSS feed returns a max of ~500 reviews per country (10 pages × 50). This is an Apple limitation.
-- **Deduplication**: Reviews are automatically deduplicated across pages, so you always get unique results.
-- **Input validation**: `--stars` and `--min-stars` accept 1-5, `--pages` accepts 1-10. Invalid values are rejected with a clear error.
-- **No reviews?** "No reviews match the given filters" means filters are too narrow. Try fewer keywords, more days, or a higher star ceiling.
-- **Network errors**: If the App Store is unreachable, you'll get a clear error message instead of a traceback.
-
-## Setup
-
-```bash
-# From PyPI (recommended)
-pip install appstore-review-cli
-
-# From source with uv
-uv sync
-
-# From source with pip
-pip install -e .
-
-# With pandas support for data analysis
-pip install appstore-review-cli[pandas]
-```
-
-After install, the `appstore-reviews` command works globally. You can also run directly without installing:
-```bash
-python3 cli.py search "Slack"
-python3 cli.py reviews 803453959 --stars 2
-```
-
-## Python API for Data Analysis
-
-Use the Python API directly in scripts or Jupyter notebooks — no CLI needed:
-
-```python
-from appinsight import get_reviews, get_reviews_df
-
-# As a list of dicts (no pandas required)
-reviews = get_reviews(618783545, stars=2, days=30)
-print(f"{len(reviews)} negative reviews")
-
-# As a pandas DataFrame
-df = get_reviews_df(618783545, stars=2, pages=5)
-
-# Analysis examples
-df.groupby("version")["rating"].mean()          # avg rating per version
-df.groupby(df["date"].dt.date).size()            # reviews per day
-df[df["content"].str.contains("crash", case=False)]  # find crash mentions
-
-# Search also works
-from appinsight import search
-apps = search("Slack", limit=3)
-```
-
-Requires pandas: `pip install appstore-review-cli[pandas]`
+- **Pipe-safe**: Data goes to stdout, progress to stderr.
+- **Review limit**: Apple returns max ~500 reviews per country (10 pages × 50). This is Apple's limit.
+- **Deduplication**: Reviews are automatically deduplicated across pages.
+- **Validation**: `--stars`/`--min-stars` accept 1-5, `--pages` accepts 1-10. Invalid values are rejected.
+- **No results?** Filters are too narrow — try fewer keywords, more days, or a higher star ceiling.
 
 ## Development
 
 ```bash
-# Clone and install
 git clone https://github.com/vkayatas/appstore-review-cli.git
 cd appstore-review-cli
 uv sync
-
-# Run tests
 uv run pytest
-```
-
-## Works With Any AI Coding Agent
-
-After `pip install appstore-review-cli`, run one setup command from your project directory:
-
-```bash
-appstore-reviews setup copilot    # → creates SKILL.md
-appstore-reviews setup claude     # → creates CLAUDE.md
-appstore-reviews setup cursor     # → creates .cursor/rules/appstore-reviews.md
-appstore-reviews setup windsurf   # → creates .windsurfrules
-```
-
-The agent discovers the file automatically and knows every command. No manual copy-paste needed.
-
-| Option | What it does |
-|--------|--------------|
-| `--force` | Overwrite if the file already exists |
-| `--append` | Append to an existing file instead of overwriting |
-
-## Architecture
-
-```
-appinsight/
-├── cli.py          # CLI logic (entry point)
-├── scraper.py      # Apple RSS/JSON feed parser
-├── filters.py      # Rating, date, keyword, version filters
-├── formatters.py   # JSON, CSV, markdown, plain text output
-├── analyzer.py     # Ollama integration for built-in analysis
-├── dataframe.py    # Python API: get_reviews(), get_reviews_df()
-└── setup.py        # Agent setup: appstore-reviews setup <agent>
-cli.py              # Thin wrapper (python3 cli.py still works)
-SKILL.md            # GitHub Copilot skill definition
-CLAUDE.md           # Claude Code integration
 ```
 
 ## Roadmap
 
 - [ ] Google Play Store support
-- [ ] Multi-app comparison (`compare` command)
+- [ ] Multi-app comparison command
 - [ ] Version diff (sentiment changes between releases)
-- [ ] More analysis modes (trend detection, sentiment over time)
