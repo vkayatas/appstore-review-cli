@@ -63,6 +63,11 @@ appstore-reviews version-diff 803453959 --old 4.23.0 --new 4.29.149
 # Show rating trend over time (weekly or monthly)
 appstore-reviews trend 803453959 --pages 5
 appstore-reviews trend 803453959 --period month --stars 2
+
+# Export compare/version-diff/trend to JSON or CSV
+appstore-reviews compare 803453959 310633997 --format json > compare.json
+appstore-reviews version-diff 803453959 --format csv > diff.csv
+appstore-reviews trend 803453959 --format csv > trend.csv
 ```
 
 ## Agent Integration
@@ -159,6 +164,7 @@ Plus all the same filters as `reviews` (`--stars`, `--min-stars`, `--days`, `--k
 | `--pages 5` | Pages to fetch per app (1-10, default 3) |
 | `--sort votes` | Sort by: `date` \| `rating` \| `votes` |
 | `--country de` | App Store region (default: `us`) |
+| `--format json` | Output format: `text` (default) \| `json` \| `csv` |
 
 Outputs: overview table, per-app rating distribution, top complaint categories, top keywords, shared vs unique complaints.
 
@@ -173,6 +179,7 @@ Outputs: overview table, per-app rating distribution, top complaint categories, 
 | `--days 90` | Only reviews from the last N days |
 | `--keywords crash,bug` | Only reviews containing these words |
 | `--pages 5` | Pages to fetch (1-10, default 5) |
+| `--format json` | Output format: `text` (default) \| `json` \| `csv` |
 
 Outputs: version comparison table, rating distributions, complaint category changes (with arrows), new/resolved issues, top keywords per version. Versions are auto-detected from the two most reviewed if not specified.
 
@@ -186,6 +193,7 @@ Outputs: version comparison table, rating distributions, complaint category chan
 | `--days 90` | Only reviews from the last N days |
 | `--keywords crash,bug` | Only reviews containing these words |
 | `--pages 5` | Pages to fetch (1-10, default 5) |
+| `--format json` | Output format: `text` (default) \| `json` \| `csv` |
 
 Outputs: per-period table with average rating, review count, trend arrows (▲/▼), ASCII sparkline bars, mini star distributions, and overall trend summary.
 
@@ -249,3 +257,4 @@ uv run pytest
 - [x] Multi-app comparison command
 - [x] Version diff (sentiment changes between releases)
 - [x] Rating trend over time (weekly/monthly)
+- [x] Export compare/version-diff/trend to JSON/CSV

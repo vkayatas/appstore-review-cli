@@ -1,5 +1,8 @@
 """Trend - show rating trends over time (weekly or monthly)."""
 
+import csv
+import io
+import json
 import sys
 from collections import OrderedDict
 from datetime import datetime, timezone
@@ -64,6 +67,7 @@ def trend(
     keywords: list[str] | None = None,
     days: int | None = None,
     store: str = "apple",
+    format: str = "text",
 ) -> str:
     """Fetch reviews and show rating trend over time."""
     if store == "google":
@@ -109,62 +113,120 @@ def trend(
     all_ratings = [r.rating for r in filtered]
     overall_avg = sum(all_ratings) / len(all_ratings)
 
-    # Build report
-    period_label = "Week" if period == "week" else "Month"
-    lines: list[str] = []
-    lines.append("=" * 60)
-    lines.append(f"RATING TREND: {name} (by {period_label.lower()})")
-    lines.append("=" * 60)
-    lines.append(f"  Overall: {overall_avg:.2f}★ across {len(filtered)} reviews")
-    lines.append("")
-
-    lines.append(f"  {period_label:<12} {'Avg':>5} {'Count':>6}  {'Trend':<22} {'Dist'}")
-    lines.append(f"  {'-'*60}")
-
+    # Build structured period data
+    period_data: list[dict] = []
     prev_avg = None
     for key, revs in groups.items():
         ratings = [r.rating for r in revs]
         avg = sum(ratings) / len(ratings)
-        bar = _sparkline(ratings)
+        dist = {str(i): ratings.count(i) for i in range(1, 6)}
 
-        # Direction arrow
         if prev_avg is not None:
             delta = avg - prev_avg
-            if delta > 0.3:
-                arrow = " ▲"
-            elif delta < -0.3:
-                arrow = " ▼"
-            else:
-                arrow = "  "
+            trend_dir = "up" if delta > 0.3 else "down" if delta < -0.3 else "stable"
         else:
-            arrow = "  "
+            trend_dir = None
 
-        # Mini distribution
-        dist = ""
-        for s in range(1, 6):
-            c = ratings.count(s)
-            if c > 0:
-                dist += f"{s}★:{c} "
-
-        lines.append(f"  {key:<12} {avg:>4.1f}★ {len(revs):>5}{arrow}  {bar}  {dist.strip()}")
+        period_data.append({
+            "period": key,
+            "avg_rating": round(avg, 2),
+            "count": len(revs),
+            "trend": trend_dir,
+            "rating_distribution": dist,
+        })
         prev_avg = avg
 
-    # Trend summary
+    # Overall trend
     keys = list(groups.keys())
+    overall_trend = None
+    trend_delta = None
     if len(keys) >= 2:
         first_revs = groups[keys[0]]
         last_revs = groups[keys[-1]]
         first_avg = sum(r.rating for r in first_revs) / len(first_revs)
         last_avg = sum(r.rating for r in last_revs) / len(last_revs)
-        change = last_avg - first_avg
-        sign = "+" if change >= 0 else ""
-        if abs(change) > 0.3:
-            direction = "improving" if change > 0 else "declining"
+        trend_delta = round(last_avg - first_avg, 2)
+        if abs(trend_delta) > 0.3:
+            overall_trend = "improving" if trend_delta > 0 else "declining"
         else:
-            direction = "stable"
+            overall_trend = "stable"
 
+    data = {
+        "app_name": name,
+        "period_type": period,
+        "overall_avg": round(overall_avg, 2),
+        "total_reviews": len(filtered),
+        "overall_trend": overall_trend,
+        "trend_delta": trend_delta,
+        "periods": period_data,
+    }
+
+    if format == "json":
+        return json.dumps(data, indent=2, ensure_ascii=False)
+    if format == "csv":
+        return _trend_to_csv(data)
+    return _trend_to_text(data, groups)
+
+
+def _trend_to_csv(data: dict) -> str:
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow([
+        "period", "avg_rating", "count", "trend",
+        "1_star", "2_star", "3_star", "4_star", "5_star",
+    ])
+    for p in data["periods"]:
+        d = p["rating_distribution"]
+        writer.writerow([
+            p["period"], p["avg_rating"], p["count"], p["trend"] or "",
+            d["1"], d["2"], d["3"], d["4"], d["5"],
+        ])
+    return buf.getvalue()
+
+
+def _trend_to_text(data: dict, groups: OrderedDict[str, list[Review]]) -> str:
+    name = data["app_name"]
+    period = data["period_type"]
+    overall_avg = data["overall_avg"]
+    total = data["total_reviews"]
+
+    period_label = "Week" if period == "week" else "Month"
+    lines: list[str] = []
+    lines.append("=" * 60)
+    lines.append(f"RATING TREND: {name} (by {period_label.lower()})")
+    lines.append("=" * 60)
+    lines.append(f"  Overall: {overall_avg:.2f}★ across {total} reviews")
+    lines.append("")
+
+    lines.append(f"  {period_label:<12} {'Avg':>5} {'Count':>6}  {'Trend':<22} {'Dist'}")
+    lines.append(f"  {'-'*60}")
+
+    for pd in data["periods"]:
+        ratings = [r.rating for r in groups[pd["period"]]]
+        bar = _sparkline(ratings)
+
+        t = pd["trend"]
+        if t == "up":
+            arrow = " ▲"
+        elif t == "down":
+            arrow = " ▼"
+        else:
+            arrow = "  "
+
+        dist = ""
+        for s in range(1, 6):
+            c = int(pd["rating_distribution"][str(s)])
+            if c > 0:
+                dist += f"{s}★:{c} "
+
+        lines.append(f"  {pd['period']:<12} {pd['avg_rating']:>4.1f}★ {pd['count']:>5}{arrow}  {bar}  {dist.strip()}")
+
+    # Trend summary
+    if data["overall_trend"] and data["trend_delta"] is not None:
+        sign = "+" if data["trend_delta"] >= 0 else ""
+        keys = [p["period"] for p in data["periods"]]
         lines.append("")
-        lines.append(f"  Trend: {direction} ({sign}{change:.2f}★ from {keys[0]} to {keys[-1]})")
+        lines.append(f"  Trend: {data['overall_trend']} ({sign}{data['trend_delta']:.2f}★ from {keys[0]} to {keys[-1]})")
 
     lines.append("")
     return "\n".join(lines)

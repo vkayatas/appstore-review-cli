@@ -77,6 +77,13 @@ appstore-reviews trend <APP_ID> --period month --stars 2
 ```
 Shows: per-period average rating, review count, trend arrows (▲/▼), sparkline bars, star distributions, and overall trend direction.
 
+Export compare/version-diff/trend to JSON or CSV:
+```bash
+appstore-reviews compare <APP_ID_1> <APP_ID_2> --format json
+appstore-reviews version-diff <APP_ID> --format csv > diff.csv
+appstore-reviews trend <APP_ID> --format csv > trend.csv
+```
+
 All options: `appstore-reviews reviews --help`
 
 ## Important Behavior

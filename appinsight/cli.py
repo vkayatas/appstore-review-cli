@@ -221,6 +221,7 @@ def cmd_compare(args):
             days=args.days,
             sort_by=args.sort,
             store=args.store,
+            format=args.format,
         )
     except ImportError as e:
         print(f"Error: {e}", file=sys.stderr)
@@ -250,6 +251,7 @@ def cmd_version_diff(args):
             keywords=keywords,
             days=args.days,
             store=args.store,
+            format=args.format,
         )
     except ImportError as e:
         print(f"Error: {e}", file=sys.stderr)
@@ -278,6 +280,7 @@ def cmd_trend(args):
             keywords=keywords,
             days=args.days,
             store=args.store,
+            format=args.format,
         )
     except ImportError as e:
         print(f"Error: {e}", file=sys.stderr)
@@ -361,6 +364,8 @@ def main():
                            help="Pages to fetch per app, 1-10 (default: 3)", metavar="PAGES")
     p_compare.add_argument("--sort", choices=["date", "rating", "votes"], default=None,
                            help="Sort order: date (newest), rating (lowest), votes (most helpful)")
+    p_compare.add_argument("--format", choices=["text", "json", "csv"], default="text",
+                           help="Output format: text (default), json, csv")
 
     # --- version-diff ---
     p_vdiff = sub.add_parser("version-diff", help="Compare sentiment between app versions")
@@ -376,6 +381,8 @@ def main():
     p_vdiff.add_argument("--keywords", default=None, help="Comma-separated keywords to filter by")
     p_vdiff.add_argument("--pages", type=int, default=5, choices=range(1, 11),
                          help="Pages to fetch (1-10, default: 5)", metavar="PAGES")
+    p_vdiff.add_argument("--format", choices=["text", "json", "csv"], default="text",
+                         help="Output format: text (default), json, csv")
 
     # --- trend ---
     p_trend = sub.add_parser("trend", help="Show rating trend over time")
@@ -391,6 +398,8 @@ def main():
     p_trend.add_argument("--keywords", default=None, help="Comma-separated keywords to filter by")
     p_trend.add_argument("--pages", type=int, default=5, choices=range(1, 11),
                          help="Pages to fetch (1-10, default: 5)", metavar="PAGES")
+    p_trend.add_argument("--format", choices=["text", "json", "csv"], default="text",
+                         help="Output format: text (default), json, csv")
 
     args = parser.parse_args()
 

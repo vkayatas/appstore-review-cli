@@ -87,6 +87,8 @@ appstore-reviews trend <APP_ID> --period month --stars 2
 ```
 Shows: per-period average rating, review count, trend arrows (▲/▼), sparkline bars, star distributions, and overall trend direction.
 
+All three commands support `--format json` and `--format csv` for machine-readable export.
+
 ### Gap Finder
 Fetch 1-2 star reviews and analyze for unmet needs:
 ```bash

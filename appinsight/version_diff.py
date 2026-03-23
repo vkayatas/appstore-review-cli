@@ -1,5 +1,8 @@
 """Version diff - compare sentiment and complaints between app versions."""
 
+import csv
+import io
+import json
 import sys
 from collections import Counter
 
@@ -68,6 +71,7 @@ def version_diff(
     keywords: list[str] | None = None,
     days: int | None = None,
     store: str = "apple",
+    format: str = "text",
 ) -> str:
     """Fetch reviews and compare sentiment between two versions."""
     if store == "google":
@@ -131,6 +135,94 @@ def version_diff(
     old_words = _top_keywords(old_reviews, n=8)
     new_words = _top_keywords(new_reviews, n=8)
 
+    # Build structured data
+    all_cats = set(old_cats.keys()) | set(new_cats.keys())
+    category_changes = []
+    for cat in all_cats:
+        old_count = old_cats.get(cat, 0)
+        new_count = new_cats.get(cat, 0)
+        old_pct = old_count / len(old_reviews) * 100 if old_reviews else 0
+        new_pct = new_count / len(new_reviews) * 100 if new_reviews else 0
+        category_changes.append({
+            "category": cat,
+            "old_pct": round(old_pct, 1),
+            "new_pct": round(new_pct, 1),
+            "change_pct": round(new_pct - old_pct, 1),
+        })
+    category_changes.sort(key=lambda x: abs(x["change_pct"]), reverse=True)
+
+    old_dist = {str(i): sum(1 for r in old_reviews if r.rating == i) for i in range(1, 6)}
+    new_dist = {str(i): sum(1 for r in new_reviews if r.rating == i) for i in range(1, 6)}
+
+    new_issues = sorted(set(new_cats.keys()) - set(old_cats.keys()))
+    resolved_issues = sorted(set(old_cats.keys()) - set(new_cats.keys()))
+
+    other_versions = sorted(
+        [{"version": v, "count": len(rs)} for v, rs in groups.items() if v not in (old_v, new_v)],
+        key=lambda x: x["count"],
+        reverse=True,
+    )
+
+    direction = "improved" if delta > 0.1 else "declined" if delta < -0.1 else "unchanged"
+
+    data = {
+        "app_name": name,
+        "old_version": old_v,
+        "new_version": new_v,
+        "sentiment": direction,
+        "delta": round(delta, 2),
+        "old": {
+            "version": old_v,
+            "review_count": len(old_reviews),
+            "avg_rating": round(old_avg, 2),
+            "rating_distribution": old_dist,
+            "categories": old_cats,
+            "top_keywords": [[w, c] for w, c in old_words],
+        },
+        "new": {
+            "version": new_v,
+            "review_count": len(new_reviews),
+            "avg_rating": round(new_avg, 2),
+            "rating_distribution": new_dist,
+            "categories": new_cats,
+            "top_keywords": [[w, c] for w, c in new_words],
+        },
+        "category_changes": category_changes,
+        "new_issues": new_issues,
+        "resolved_issues": resolved_issues,
+        "other_versions": other_versions[:8],
+    }
+
+    if format == "json":
+        return json.dumps(data, indent=2, ensure_ascii=False)
+    if format == "csv":
+        return _vdiff_to_csv(data)
+    return _vdiff_to_text(data, old_reviews, new_reviews, old_words, new_words, groups, old_v, new_v)
+
+def _vdiff_to_csv(data: dict) -> str:
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(["category", "old_pct", "new_pct", "change_pct"])
+    for ch in data["category_changes"]:
+        writer.writerow([ch["category"], ch["old_pct"], ch["new_pct"], ch["change_pct"]])
+    return buf.getvalue()
+
+
+def _vdiff_to_text(
+    data: dict,
+    old_reviews: list[Review],
+    new_reviews: list[Review],
+    old_words: list[tuple[str, int]],
+    new_words: list[tuple[str, int]],
+    groups: dict[str, list[Review]],
+    old_v: str,
+    new_v: str,
+) -> str:
+    name = data["app_name"]
+    old_avg = data["old"]["avg_rating"]
+    new_avg = data["new"]["avg_rating"]
+    delta = data["delta"]
+
     # Build report
     lines: list[str] = []
     lines.append("=" * 60)
@@ -139,8 +231,7 @@ def version_diff(
 
     # Overview
     delta_str = f"+{delta:.2f}" if delta >= 0 else f"{delta:.2f}"
-    direction = "improved" if delta > 0.1 else "declined" if delta < -0.1 else "unchanged"
-    lines.append(f"  {old_v} -> {new_v}  (sentiment {direction})")
+    lines.append(f"  {old_v} -> {new_v}  (sentiment {data['sentiment']})")
     lines.append("")
 
     lines.append(f"  {'':20} {'Old (' + old_v + ')':>20} {'New (' + new_v + ')':>20}")
@@ -164,35 +255,22 @@ def version_diff(
                 lines.append(f"    {stars}★ {count:>4}  {bar}")
 
     # Category changes
-    all_cats = set(old_cats.keys()) | set(new_cats.keys())
-    if all_cats:
+    if data["category_changes"]:
         lines.append("")
         lines.append("  Complaint categories (change):")
-        rows = []
-        for cat in all_cats:
-            old_count = old_cats.get(cat, 0)
-            new_count = new_cats.get(cat, 0)
-            old_pct = old_count / len(old_reviews) * 100 if old_reviews else 0
-            new_pct = new_count / len(new_reviews) * 100 if new_reviews else 0
-            diff_pct = new_pct - old_pct
-            rows.append((cat, old_pct, new_pct, diff_pct))
-
-        # Sort by absolute change
-        rows.sort(key=lambda x: abs(x[3]), reverse=True)
-        for cat, old_pct, new_pct, diff_pct in rows:
+        for ch in data["category_changes"]:
+            diff_pct = ch["change_pct"]
             arrow = "▲" if diff_pct > 2 else "▼" if diff_pct < -2 else "="
             sign = "+" if diff_pct >= 0 else ""
-            lines.append(f"    {arrow} {cat:<25} {old_pct:>5.0f}% -> {new_pct:>5.0f}% ({sign}{diff_pct:.0f}%)")
+            lines.append(f"    {arrow} {ch['category']:<25} {ch['old_pct']:>5.0f}% -> {ch['new_pct']:>5.0f}% ({sign}{diff_pct:.0f}%)")
 
     # New/resolved issues
-    new_only = set(new_cats.keys()) - set(old_cats.keys())
-    resolved = set(old_cats.keys()) - set(new_cats.keys())
-    if new_only:
+    if data["new_issues"]:
         lines.append("")
-        lines.append(f"  New issues in {new_v}: {', '.join(sorted(new_only))}")
-    if resolved:
+        lines.append(f"  New issues in {new_v}: {', '.join(data['new_issues'])}")
+    if data["resolved_issues"]:
         lines.append("")
-        lines.append(f"  Resolved since {old_v}: {', '.join(sorted(resolved))}")
+        lines.append(f"  Resolved since {old_v}: {', '.join(data['resolved_issues'])}")
 
     # Top words per version
     if old_words:
@@ -204,14 +282,9 @@ def version_diff(
         lines.append(f"  Top words in {new_v}: {word_str}")
 
     # Other versions seen
-    other_versions = sorted(
-        [(v, len(rs)) for v, rs in groups.items() if v not in (old_v, new_v)],
-        key=lambda x: x[1],
-        reverse=True,
-    )
-    if other_versions:
+    if data["other_versions"]:
         lines.append("")
-        other_str = ", ".join(f"{v} ({c})" for v, c in other_versions[:8])
+        other_str = ", ".join(f"{v['version']} ({v['count']})" for v in data["other_versions"])
         lines.append(f"  Other versions with reviews: {other_str}")
 
     lines.append("")

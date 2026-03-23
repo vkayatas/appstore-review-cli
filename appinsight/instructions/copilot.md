@@ -83,6 +83,8 @@ appstore-reviews trend <APP_ID> --period month --stars 2
 Supports `--stars`, `--min-stars`, `--days`, `--keywords`, `--pages`, `--period week|month`.
 Shows: per-period average rating, review count, trend arrows (▲/▼), sparkline bars, star distributions, and overall trend direction.
 
+All three commands (`compare`, `version-diff`, `trend`) support `--format json` and `--format csv` for machine-readable export.
+
 ## Analysis Modes
 
 When the user asks for analysis, fetch the relevant reviews with the CLI, then **analyze them yourself** in your response. Do not run `analyze` or pipe to another LLM — you are the LLM.
