@@ -27,6 +27,53 @@ appstore-reviews reviews 803453959 --stars 2 --days 30 --keywords crash,freeze
 
 Three commands to go from app name → filtered reviews.
 
+### Using with an AI coding agent
+
+This repo includes instruction files that teach your agent the full CLI — install and ask:
+
+<details>
+<summary><strong>Claude Code</strong></summary>
+
+Reads [`CLAUDE.md`](CLAUDE.md) automatically when you open this repo. No config needed.
+
+```
+You: "What are Slack users complaining about this month?"
+```
+Claude runs the CLI, fetches reviews, and analyzes them directly — no Ollama required.
+</details>
+
+<details>
+<summary><strong>GitHub Copilot</strong></summary>
+
+Discovers [`SKILL.md`](SKILL.md) as a workspace skill automatically. No config needed.
+
+```
+You: "Find crash reports for WhatsApp in the last 30 days"
+```
+Copilot invokes `appstore-reviews` and reasons over the output.
+</details>
+
+<details>
+<summary><strong>Cursor / Windsurf / Others</strong></summary>
+
+No auto-discovery — you need to point the agent at the tool:
+
+1. Add `CLAUDE.md` or `SKILL.md` content to your agent's system prompt or rules file, **or**
+2. Tell the agent: *"Use `appstore-reviews --help` to learn the CLI, then fetch Slack reviews"*
+</details>
+
+<details>
+<summary><strong>No agent? Use Ollama or pipe to any LLM</strong></summary>
+
+```bash
+# Built-in analysis with a local LLM
+appstore-reviews analyze 803453959 --stars 2 --mode summary
+
+# Or pipe to any tool you want
+appstore-reviews reviews 803453959 --stars 2 --format text | your-llm "Summarize:"
+```
+</details>
+
 ## Two Ways to Analyze Reviews
 
 ### Path 1: Using an AI coding agent (no extra setup)
