@@ -63,6 +63,13 @@ appstore-reviews compare <APP_ID_1> <APP_ID_2> --stars 2 --pages 3
 ```
 Shows: overview table, rating distributions, top complaint categories, top keywords, shared vs unique complaints.
 
+Compare sentiment between app versions:
+```bash
+appstore-reviews version-diff <APP_ID> --pages 5
+appstore-reviews version-diff <APP_ID> --old 4.23.0 --new 4.29.149
+```
+Shows: version comparison table, category changes with arrows, new/resolved issues, top keywords per version. Auto-detects the two most reviewed versions if `--old`/`--new` are omitted.
+
 All options: `appstore-reviews reviews --help`
 
 ## Important Behavior
@@ -128,9 +135,9 @@ Group complaints by category: performance, features, bugs.
 **User asks: "What changed in the latest version of Notion?"**
 ```bash
 appstore-reviews search "Notion"
-appstore-reviews reviews <APP_ID> --days 14 --format text --stats
+appstore-reviews version-diff <APP_ID> --pages 5
 ```
-Look for mentions of recent changes, new bugs, or praise for new features.
+The version-diff command shows exactly how sentiment shifted: rating changes, new/resolved complaint categories, and top keywords per version.
 
 ## Python API
 

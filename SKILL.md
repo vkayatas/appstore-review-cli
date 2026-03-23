@@ -71,6 +71,14 @@ appstore-reviews compare <APP_ID_1> <APP_ID_2> --stars 2 --pages 5
 ```
 Produces: overview table, per-app rating distribution, top complaint categories, top keywords, shared vs unique complaints.
 
+### Version Diff
+Compare sentiment between app versions:
+```bash
+appstore-reviews version-diff <APP_ID> --pages 5
+appstore-reviews version-diff <APP_ID> --old 4.23.0 --new 4.29.149
+```
+Shows: version comparison table, category changes with arrows, new/resolved issues, top keywords per version. Auto-detects the two most reviewed versions if `--old`/`--new` are omitted.
+
 ### Gap Finder
 Fetch 1-2 star reviews and analyze for unmet needs:
 ```bash

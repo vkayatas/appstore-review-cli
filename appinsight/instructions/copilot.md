@@ -67,6 +67,14 @@ appstore-reviews compare <APP_ID_1> <APP_ID_2> [options]
 Takes two or more app IDs. Supports `--stars`, `--min-stars`, `--days`, `--keywords`, `--pages`, `--sort`, `--country`.
 Produces: overview table, per-app rating distribution, top complaint categories, top keywords, shared vs unique complaints.
 
+### 4. Compare sentiment between versions
+```bash
+appstore-reviews version-diff <APP_ID> --pages 5
+appstore-reviews version-diff <APP_ID> --old 4.23.0 --new 4.29.149
+```
+Supports `--stars`, `--min-stars`, `--days`, `--keywords`, `--pages`.
+Shows: version comparison table, category changes with arrows, new/resolved issues, top keywords per version. Auto-detects the two most reviewed versions if `--old`/`--new` are omitted.
+
 ## Analysis Modes
 
 When the user asks for analysis, fetch the relevant reviews with the CLI, then **analyze them yourself** in your response. Do not run `analyze` or pipe to another LLM — you are the LLM.

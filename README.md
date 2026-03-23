@@ -9,7 +9,7 @@ App store reviews are the largest public dataset of unfiltered user feedback. Bu
 - **Two stores**: Apple App Store and Google Play - same filters, same output, one tool.
 - **Competitor research**: Pull 1-star reviews for any app and find the feature gaps your product can fill.
 - **Bug triage**: Filter reviews by keywords like "crash", "freeze", "login" and group by app version.
-- **Version monitoring**: Check how users reacted to a specific release before your next sprint.
+- **Version monitoring**: Compare sentiment between releases - see what got better, what got worse, and what's new.
 - **Multi-country insights**: Same app, different markets - compare complaints across `us`, `de`, `jp`, etc.
 - **AI-native**: Your coding agent (Copilot, Claude Code, Cursor) can fetch and analyze reviews in natural language. No Ollama needed - the agent IS the LLM.
 
@@ -55,6 +55,10 @@ appstore-reviews compare 803453959 310633997 --stars 2 --pages 3
 appstore-reviews --store google search "Slack"
 appstore-reviews --store google reviews com.Slack --stars 2 --days 30
 appstore-reviews --store google compare com.Slack com.microsoft.teams --stars 2
+
+# Compare sentiment between app versions
+appstore-reviews version-diff 803453959 --pages 5
+appstore-reviews version-diff 803453959 --old 4.23.0 --new 4.29.149
 ```
 
 ## Agent Integration
@@ -154,6 +158,20 @@ Plus all the same filters as `reviews` (`--stars`, `--min-stars`, `--days`, `--k
 
 Outputs: overview table, per-app rating distribution, top complaint categories, top keywords, shared vs unique complaints.
 
+### `version-diff <APP_ID>` - Compare sentiment between versions
+
+| Flag | Description |
+|------|-------------|
+| `--old 4.23.0` | Old version to compare (auto-detected if omitted) |
+| `--new 4.29.149` | New version to compare (auto-detected if omitted) |
+| `--stars 2` | Max star rating to include (1-5) |
+| `--min-stars 3` | Min star rating (1-5) |
+| `--days 90` | Only reviews from the last N days |
+| `--keywords crash,bug` | Only reviews containing these words |
+| `--pages 5` | Pages to fetch (1-10, default 5) |
+
+Outputs: version comparison table, rating distributions, complaint category changes (with arrows), new/resolved issues, top keywords per version. Versions are auto-detected from the two most reviewed if not specified.
+
 ### `setup <agent>` - Install agent instructions
 
 | Argument / Flag | Description |
@@ -212,4 +230,4 @@ uv run pytest
 
 - [x] Google Play Store support
 - [x] Multi-app comparison command
-- [ ] Version diff (sentiment changes between releases)
+- [x] Version diff (sentiment changes between releases)

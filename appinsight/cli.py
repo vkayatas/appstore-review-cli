@@ -17,6 +17,7 @@ from .filters import apply_filters
 from .formatters import to_json, to_csv, to_markdown, to_text, summary_stats
 from .analyzer import analyze, check_ollama, list_models
 from .compare import compare_apps
+from .version_diff import version_diff
 from .setup import cmd_setup, AGENTS
 
 STORES = ["apple", "google"]
@@ -226,6 +227,35 @@ def cmd_compare(args):
     print(result)
 
 
+def cmd_version_diff(args):
+    """Compare sentiment between app versions."""
+    if args.store == "apple":
+        try:
+            int(args.app_id)
+        except ValueError:
+            print(f"Error: Apple App Store IDs must be numeric (got '{args.app_id}'). "
+                  "Did you mean --store google?", file=sys.stderr)
+            sys.exit(1)
+    keywords = args.keywords.split(",") if args.keywords else None
+    try:
+        result = version_diff(
+            app_id=args.app_id,
+            country=args.country,
+            pages=args.pages,
+            old_version=args.old,
+            new_version=args.new,
+            max_rating=args.stars,
+            min_rating=args.min_stars,
+            keywords=keywords,
+            days=args.days,
+            store=args.store,
+        )
+    except ImportError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
+    print(result)
+
+
 def main():
     parser = argparse.ArgumentParser(
         prog="appstore-reviews",
@@ -303,6 +333,21 @@ def main():
     p_compare.add_argument("--sort", choices=["date", "rating", "votes"], default=None,
                            help="Sort order: date (newest), rating (lowest), votes (most helpful)")
 
+    # --- version-diff ---
+    p_vdiff = sub.add_parser("version-diff", help="Compare sentiment between app versions")
+    p_vdiff.add_argument("app_id",
+                         help="Numeric App Store ID or Google Play package name")
+    p_vdiff.add_argument("--old", default=None, help="Old version to compare (auto-detected if omitted)")
+    p_vdiff.add_argument("--new", default=None, help="New version to compare (auto-detected if omitted)")
+    p_vdiff.add_argument("--stars", type=int, default=None, choices=range(1, 6),
+                         help="Max star rating to include", metavar="STARS")
+    p_vdiff.add_argument("--min-stars", type=int, default=None, choices=range(1, 6),
+                         help="Min star rating to include", metavar="STARS")
+    p_vdiff.add_argument("--days", type=int, default=None, help="Only reviews from the last N days")
+    p_vdiff.add_argument("--keywords", default=None, help="Comma-separated keywords to filter by")
+    p_vdiff.add_argument("--pages", type=int, default=5, choices=range(1, 11),
+                         help="Pages to fetch (1-10, default: 5)", metavar="PAGES")
+
     args = parser.parse_args()
 
     if args.command == "search":
@@ -319,6 +364,8 @@ def main():
         if len(args.app_ids) < 2:
             p_compare.error("compare requires at least 2 app IDs")
         cmd_compare(args)
+    elif args.command == "version-diff":
+        cmd_version_diff(args)
 
 
 if __name__ == "__main__":
