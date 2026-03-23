@@ -62,6 +62,13 @@ If not installed, use: `python3 cli.py reviews <APP_ID> [options]`
 
 When the user asks for analysis, fetch the relevant reviews with the CLI, then **analyze them yourself** in your response. Do not run `analyze` or pipe to another LLM — you are the LLM.
 
+### Compare Multiple Apps
+Use the `compare` command for side-by-side analysis:
+```bash
+appstore-reviews compare <APP_ID_1> <APP_ID_2> --stars 2 --pages 5
+```
+Produces: overview table, per-app rating distribution, top complaint categories, top keywords, shared vs unique complaints.
+
 ### Gap Finder
 Fetch 1-2 star reviews and analyze for unmet needs:
 ```bash
@@ -102,13 +109,9 @@ Group results by symptom: failed payments, unwanted charges, subscription cancel
 
 **"Compare negative reviews for two competing apps"**
 ```bash
-appstore-reviews reviews <APP_A_ID> --stars 2 --pages 5 --format json > /tmp/app_a.json
-appstore-reviews reviews <APP_B_ID> --stars 2 --pages 5 --format json > /tmp/app_b.json
+appstore-reviews compare <APP_A_ID> <APP_B_ID> --stars 2 --pages 5
 ```
-Then compare:
-1. What complaints overlap? (shared industry problems)
-2. What's unique to each app? (competitive weaknesses)
-3. Which app has worse sentiment in specific categories?
+The compare command produces a structured report with per-app breakdowns, shared complaints, and unique weaknesses. You can supplement with additional analysis.
 
 **"Check reviews for a specific country"**
 ```bash

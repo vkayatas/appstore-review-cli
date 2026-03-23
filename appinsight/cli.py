@@ -16,6 +16,7 @@ from .scraper import search_app, lookup_app, fetch_reviews
 from .filters import apply_filters
 from .formatters import to_json, to_csv, to_markdown, to_text, summary_stats
 from .analyzer import analyze, check_ollama, list_models
+from .compare import compare_apps
 from .setup import cmd_setup, AGENTS
 
 
@@ -160,6 +161,22 @@ def to_json_apps(apps):
     return json.dumps([a.to_dict() for a in apps], indent=2, ensure_ascii=False)
 
 
+def cmd_compare(args):
+    """Compare reviews across multiple apps."""
+    keywords = args.keywords.split(",") if args.keywords else None
+    result = compare_apps(
+        app_ids=args.app_ids,
+        country=args.country,
+        pages=args.pages,
+        max_rating=args.stars,
+        min_rating=args.min_stars,
+        keywords=keywords,
+        days=args.days,
+        sort_by=args.sort,
+    )
+    print(result)
+
+
 def main():
     parser = argparse.ArgumentParser(
         prog="appstore-reviews",
@@ -219,6 +236,20 @@ def main():
     p_setup.add_argument("--force", action="store_true", help="Overwrite existing files")
     p_setup.add_argument("--append", action="store_true", help="Append to existing files instead of overwriting")
 
+    # --- compare ---
+    p_compare = sub.add_parser("compare", help="Compare reviews across multiple apps")
+    p_compare.add_argument("app_ids", type=int, nargs="+", help="Two or more numeric App Store IDs")
+    p_compare.add_argument("--stars", type=int, default=None, choices=range(1, 6),
+                           help="Max star rating to include", metavar="STARS")
+    p_compare.add_argument("--min-stars", type=int, default=None, choices=range(1, 6),
+                           help="Min star rating to include", metavar="STARS")
+    p_compare.add_argument("--days", type=int, default=None, help="Only reviews from the last N days")
+    p_compare.add_argument("--keywords", default=None, help="Comma-separated keywords to filter by")
+    p_compare.add_argument("--pages", type=int, default=3, choices=range(1, 11),
+                           help="Pages to fetch per app, 1-10 (default: 3)", metavar="PAGES")
+    p_compare.add_argument("--sort", choices=["date", "rating", "votes"], default=None,
+                           help="Sort order: date (newest), rating (lowest), votes (most helpful)")
+
     args = parser.parse_args()
 
     if args.command == "search":
@@ -231,6 +262,10 @@ def main():
         cmd_analyze(args)
     elif args.command == "setup":
         cmd_setup(args)
+    elif args.command == "compare":
+        if len(args.app_ids) < 2:
+            p_compare.error("compare requires at least 2 app IDs")
+        cmd_compare(args)
 
 
 if __name__ == "__main__":

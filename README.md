@@ -41,6 +41,9 @@ appstore-reviews reviews 803453959 --min-stars 3 --stars 3
 # Export to CSV or JSON
 appstore-reviews reviews 803453959 --stars 2 --format csv > reviews.csv
 appstore-reviews reviews 803453959 --stars 2 --format json > reviews.json
+
+# Compare two apps side by side
+appstore-reviews compare 803453959 310633997 --stars 2 --pages 3
 ```
 
 ## Agent Integration
@@ -117,6 +120,20 @@ All filters stack with AND logic.
 
 Plus all the same filters as `reviews` (`--stars`, `--min-stars`, `--days`, `--keywords`, `--version`, `--pages`, `--sort`, `--stats`, `--country`).
 
+### `compare <APP_ID> <APP_ID> [...]` - Compare multiple apps
+
+| Flag | Description |
+|------|-------------|
+| `--stars 2` | Max star rating to include (1-5) |
+| `--min-stars 3` | Min star rating (1-5) |
+| `--days 30` | Only reviews from the last N days |
+| `--keywords crash,bug` | Only reviews containing these words |
+| `--pages 5` | Pages to fetch per app (1-10, default 3) |
+| `--sort votes` | Sort by: `date` \| `rating` \| `votes` |
+| `--country de` | App Store region (default: `us`) |
+
+Outputs: overview table, per-app rating distribution, top complaint categories, top keywords, shared vs unique complaints.
+
 ### `setup <agent>` - Install agent instructions
 
 | Argument / Flag | Description |
@@ -169,5 +186,5 @@ uv run pytest
 ## Roadmap
 
 - [ ] Google Play Store support
-- [ ] Multi-app comparison command
+- [x] Multi-app comparison command
 - [ ] Version diff (sentiment changes between releases)

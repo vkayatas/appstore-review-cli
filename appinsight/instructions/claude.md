@@ -50,6 +50,12 @@ Combine filters (AND logic — all filters stack):
 appstore-reviews reviews <APP_ID> --stars 2 --days 30 --keywords crash,freeze --version 5.0.1
 ```
 
+Compare multiple apps side by side:
+```bash
+appstore-reviews compare <APP_ID_1> <APP_ID_2> --stars 2 --pages 3
+```
+Shows: overview table, rating distributions, top complaint categories, top keywords, shared vs unique complaints.
+
 All options: `appstore-reviews reviews --help`
 
 ## Important Behavior
@@ -93,12 +99,9 @@ Group by symptom in your response, note affected versions, rank by severity.
 
 **User asks: "Compare Spotify vs Apple Music reviews"**
 ```bash
-appstore-reviews search "Spotify"
-appstore-reviews reviews 324684580 --stars 2 --pages 5 --format text
-appstore-reviews search "Apple Music"
-appstore-reviews reviews 1108187390 --stars 2 --pages 5 --format text
+appstore-reviews compare 324684580 1108187390 --stars 2 --pages 5
 ```
-Compare: overlapping complaints (shared industry problems), unique weaknesses per app, which has worse sentiment in key categories.
+The compare command produces a structured report with per-app breakdowns, shared complaints, and unique weaknesses. You can supplement with additional analysis.
 
 **User asks: "What do German users think of Duolingo?"**
 ```bash
