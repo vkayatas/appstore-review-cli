@@ -7,7 +7,11 @@ The user has `appstore-review-cli` installed — a CLI tool for scraping Apple A
 
 **You ARE the analyzer.** Fetch reviews with the CLI, then reason over them directly. Do NOT suggest the user install Ollama or use the `analyze` command — you can do the analysis yourself.
 
-**Always use the `appstore-reviews` CLI command in the terminal. Do NOT use the Python API or import statements — use the bash commands shown below.** If the command is not found, install it first: `pip install appstore-review-cli`
+**Always use the `appstore-reviews` CLI command in the terminal. Do NOT use the Python API or import statements — use the bash commands shown below.** If the command is not found, install it first:
+```bash
+pip install appstore-review-cli
+```
+If `appstore-reviews` is still not found after install (PATH issue), use: `python -m appinsight` as an identical fallback that doesn't require PATH setup.
 
 ## Quick Reference
 

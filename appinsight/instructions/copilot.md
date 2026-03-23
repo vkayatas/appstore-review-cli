@@ -14,13 +14,20 @@ You have access to a CLI tool called `appstore-reviews` that scrapes Apple App S
 
 ## Prerequisites
 
-The tool must be installed before use. If `appstore-reviews` is not found, install it first:
+The tool must be installed before use. Run this to install and verify:
 ```bash
-pip install appstore-review-cli
+pip install appstore-review-cli && appstore-reviews --help
 ```
 For Google Play support: `pip install "appstore-review-cli[google]"`
 
-**Always use the `appstore-reviews` CLI command in the terminal. Do NOT use the Python API or import statements — use the bash commands shown below.**
+If `appstore-reviews` is still not found after install (PATH issue), use the fallback:
+```bash
+python -m appinsight search "app name"
+python -m appinsight reviews <APP_ID> --stars 2
+```
+`python -m appinsight` works identically to `appstore-reviews` and does not require PATH setup.
+
+**Always use the CLI in the terminal. Do NOT use the Python API or import statements — use the bash commands shown below.**
 
 ## Important Behavior
 
