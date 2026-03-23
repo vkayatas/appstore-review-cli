@@ -17,7 +17,9 @@ You have access to a CLI tool called `appstore-reviews` that scrapes Apple App S
 - **Review limit**: Apple's RSS feed returns a maximum of ~500 reviews per country (10 pages × 50 reviews). Don't expect more.
 - **Deduplication**: Reviews are automatically deduplicated across pages.
 - **Input validation**: `--stars` accepts 1-5, `--pages` accepts 1-10. Invalid values produce an error.
-- **Filters stack**: `--stars`, `--keywords`, `--days`, and `--version` combine with AND logic. Each filter narrows the previous result.
+- **Filters stack**: `--stars`, `--min-stars`, `--keywords`, `--days`, and `--version` combine with AND logic. Each filter narrows the previous result.
+- **Rating range**: `--stars 2` means 1-2 stars. `--min-stars 3 --stars 4` means 3-4 stars. `--min-stars 3 --stars 3` means only 3-star reviews.
+- **Sorting**: Default is newest first. Use `--sort votes` to surface the most impactful reviews, `--sort rating` for lowest-rated first.
 - **"No reviews match"**: If filters return zero results, the output will say "No reviews match the given filters." This is normal — try relaxing filters (fewer keywords, more days, higher star rating).
 - **Network errors**: If Apple's API is unreachable, the CLI prints a friendly error to stderr instead of a traceback.
 
@@ -44,12 +46,14 @@ appstore-reviews reviews <APP_ID> [options]
 If not installed, use: `python3 cli.py reviews <APP_ID> [options]`
 
 **Options (all optional, filters stack with AND logic):**
-- `--stars 2` — Only 1-2 star reviews (negative sentiment). Valid range: 1-5.
+- `--stars 2` — Max star rating to include (1-2 stars). Valid range: 1-5.
+- `--min-stars 3` — Min star rating to include (3+ stars). Use with `--stars` for exact range (e.g. `--min-stars 3 --stars 3` for only 3-star reviews).
 - `--days 30` — Only reviews from the last 30 days
 - `--keywords crash,freeze,bug` — Only reviews mentioning these words (case-insensitive, matches title or content)
 - `--version 5.0.1` — Only reviews for a specific version
 - `--pages 5` — Fetch more pages, 1-10 (default: 3, max useful: 10 = ~500 reviews)
 - `--format json|text|csv|markdown` — Output format (default: text). Use `csv` for pandas/spreadsheet analysis.
+- `--sort date|rating|votes` — Sort order: `date` (newest first, default), `rating` (lowest first), `votes` (most helpful first)
 - `--stats` — Show rating distribution (printed to stderr, won't pollute data output)
 - `--country us` — App Store region. Common codes: `us`, `gb`, `de`, `fr`, `jp`, `au`, `ca`, `nl`, `br`, `kr`
 

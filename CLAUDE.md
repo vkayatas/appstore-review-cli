@@ -24,6 +24,16 @@ Fetch negative reviews:
 appstore-reviews reviews <APP_ID> --stars 2 --days 30 --format text
 ```
 
+Fetch only 3-star reviews (the nuanced ones):
+```bash
+appstore-reviews reviews <APP_ID> --min-stars 3 --stars 3 --format text
+```
+
+Sort by most helpful (votes) instead of date:
+```bash
+appstore-reviews reviews <APP_ID> --stars 2 --sort votes --format text
+```
+
 Export to CSV for data analysis:
 ```bash
 appstore-reviews reviews <APP_ID> --stars 2 --format csv > reviews.csv
@@ -46,7 +56,9 @@ All options: `appstore-reviews reviews --help`
 - **Output streams**: Data goes to stdout, progress/status goes to stderr. Pipe-safe by default.
 - **Review limit**: Apple's RSS feed returns max ~500 reviews per country (10 pages × 50). Use `--pages 10` for maximum coverage.
 - **Deduplication**: Reviews are automatically deduplicated across pages.
-- **Input validation**: `--stars` accepts 1-5, `--pages` accepts 1-10. Invalid values are rejected.
+- **Input validation**: `--stars` and `--min-stars` accept 1-5, `--pages` accepts 1-10. Invalid values are rejected.
+- **Rating range**: `--stars 2` means 1-2 stars. Use `--min-stars 3 --stars 3` for only 3-star reviews.
+- **Sorting**: `--sort date` (newest first, default), `--sort rating` (lowest first), `--sort votes` (most helpful first).
 - **No results?**: "No reviews match the given filters" means filters are too narrow. Try fewer keywords, more days, or higher star ceiling.
 - **Network errors**: If the App Store is unreachable, the CLI prints a clear error to stderr instead of a traceback.
 - **Country codes**: Default is `us`. Common alternatives: `gb`, `de`, `fr`, `jp`, `au`, `ca`, `nl`, `br`, `kr`.

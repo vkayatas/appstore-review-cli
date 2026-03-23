@@ -34,9 +34,11 @@ def search(query: str, country: str = "us", limit: int = 5) -> list[dict]:
 def get_reviews(
     app_id: int,
     stars: Optional[int] = None,
+    min_stars: Optional[int] = None,
     days: Optional[int] = None,
     keywords: Optional[list[str]] = None,
     version: Optional[str] = None,
+    sort_by: Optional[str] = None,
     country: str = "us",
     pages: int = 3,
 ) -> list[dict]:
@@ -53,9 +55,11 @@ def get_reviews(
     filtered = apply_filters(
         raw,
         max_rating=stars,
+        min_rating=min_stars,
         keywords=keywords,
         days=days,
         version=version,
+        sort_by=sort_by,
     )
     return [r.to_dict() for r in filtered]
 
@@ -63,9 +67,11 @@ def get_reviews(
 def get_reviews_df(
     app_id: int,
     stars: Optional[int] = None,
+    min_stars: Optional[int] = None,
     days: Optional[int] = None,
     keywords: Optional[list[str]] = None,
     version: Optional[str] = None,
+    sort_by: Optional[str] = None,
     country: str = "us",
     pages: int = 3,
 ):
@@ -94,9 +100,11 @@ def get_reviews_df(
     data = get_reviews(
         app_id,
         stars=stars,
+        min_stars=min_stars,
         days=days,
         keywords=keywords,
         version=version,
+        sort_by=sort_by,
         country=country,
         pages=pages,
     )

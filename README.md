@@ -7,7 +7,10 @@ Pull reviews for any iOS app, filter by rating/keywords/date, and either let you
 ## Quick Start
 
 ```bash
-# Install
+# Install from PyPI
+pip install appstore-review-cli
+
+# Or install from source with uv
 uv sync            # or: pip install -e .
 
 # 1. Find an app (returns the numeric ID you need)
@@ -249,16 +252,24 @@ appstore-reviews search "app name"
 ```
 appstore-reviews reviews <APP_ID>
     --stars 2              Max star rating to include (1-5, e.g. 2 = 1-2 stars only)
+    --min-stars 3          Min star rating to include (1-5, combine with --stars for exact range)
     --days 30              Only reviews from the last N days
     --keywords crash,bug   Only reviews containing these words (case-insensitive)
     --version 5.0.1        Only reviews for a specific app version
     --pages 5              Pages to fetch (1-10, default 3, max useful: 10 = ~500 reviews)
     --format json          Output as json | text | csv | markdown (default: text)
+    --sort votes           Sort by: date (newest), rating (lowest), votes (most helpful)
     --stats                Show rating distribution
     --country de           App Store region (default: us)
 ```
 
-All filters stack with AND logic — combine `--stars`, `--keywords`, `--days`, and `--version` to narrow results.
+All filters stack with AND logic — combine `--stars`, `--min-stars`, `--keywords`, `--days`, and `--version` to narrow results.
+
+Examples:
+- `--stars 2` → 1-2 star reviews
+- `--min-stars 3 --stars 3` → only 3-star reviews
+- `--min-stars 4` → 4-5 star reviews
+- `--sort votes` → most helpful reviews first
 
 **Analyze (requires Ollama):**
 ```
@@ -267,6 +278,7 @@ appstore-reviews analyze <APP_ID>
     --model qwen3.5:4b         Ollama model (default: qwen3.5:4b)
     --stars 2              Same filters as reviews
     --days, --keywords, --version, --pages   Same filters as reviews
+    --sort date|rating|votes   Sort order (same as reviews)
     --stats                Show rating distribution before analysis
     --list-models          Show available Ollama models and exit
 ```
@@ -278,21 +290,24 @@ appstore-reviews analyze <APP_ID>
 - **Output streams**: Review data goes to stdout, progress/status to stderr. Safe to pipe directly.
 - **Review limit**: Apple's RSS feed returns a max of ~500 reviews per country (10 pages × 50). This is an Apple limitation.
 - **Deduplication**: Reviews are automatically deduplicated across pages, so you always get unique results.
-- **Input validation**: `--stars` accepts 1-5, `--pages` accepts 1-10. Invalid values are rejected with a clear error.
+- **Input validation**: `--stars` and `--min-stars` accept 1-5, `--pages` accepts 1-10. Invalid values are rejected with a clear error.
 - **No reviews?** "No reviews match the given filters" means filters are too narrow. Try fewer keywords, more days, or a higher star ceiling.
 - **Network errors**: If the App Store is unreachable, you'll get a clear error message instead of a traceback.
 
 ## Setup
 
 ```bash
-# With uv (recommended)
+# From PyPI (recommended)
+pip install appstore-review-cli
+
+# From source with uv
 uv sync
 
-# Or with pip
+# From source with pip
 pip install -e .
 
 # With pandas support for data analysis
-pip install -e ".[pandas]"
+pip install appstore-review-cli[pandas]
 ```
 
 After install, the `appstore-reviews` command works globally. You can also run directly without installing:
@@ -326,6 +341,18 @@ apps = search("Slack", limit=3)
 ```
 
 Requires pandas: `pip install appstore-review-cli[pandas]`
+
+## Development
+
+```bash
+# Clone and install
+git clone https://github.com/vkayatas/appstore-review-cli.git
+cd appstore-review-cli
+uv sync
+
+# Run tests
+uv run pytest
+```
 
 ## Works With Any AI Coding Agent
 

@@ -62,9 +62,11 @@ def cmd_reviews(args):
     reviews = apply_filters(
         reviews,
         max_rating=args.stars,
+        min_rating=args.min_stars,
         keywords=keywords,
         days=args.days,
         version=args.version,
+        sort_by=args.sort,
     )
     print(f"After filtering: {len(reviews)} reviews", file=sys.stderr)
 
@@ -127,9 +129,11 @@ def cmd_analyze(args):
     reviews = apply_filters(
         reviews,
         max_rating=args.stars,
+        min_rating=args.min_stars,
         keywords=keywords,
         days=args.days,
         version=args.version,
+        sort_by=args.sort,
     )
     print(f"After filtering: {len(reviews)} reviews", file=sys.stderr)
 
@@ -175,12 +179,16 @@ def main():
     p_reviews.add_argument("app_id", type=int, help="Numeric App Store ID (use 'search' to find it)")
     p_reviews.add_argument("--stars", type=int, default=None, choices=range(1, 6),
                            help="Max star rating to include (e.g. 2 = 1-2 stars)", metavar="STARS")
+    p_reviews.add_argument("--min-stars", type=int, default=None, choices=range(1, 6),
+                           help="Min star rating to include (e.g. 3 = 3+ stars)", metavar="STARS")
     p_reviews.add_argument("--days", type=int, default=None, help="Only reviews from the last N days")
     p_reviews.add_argument("--keywords", default=None, help="Comma-separated keywords to filter by")
     p_reviews.add_argument("--version", default=None, help="Filter by app version")
     p_reviews.add_argument("--pages", type=int, default=3, choices=range(1, 11),
                            help="Pages to fetch, 1-10 (default: 3)", metavar="PAGES")
     p_reviews.add_argument("--format", choices=["text", "json", "csv", "markdown"], default="text")
+    p_reviews.add_argument("--sort", choices=["date", "rating", "votes"], default=None,
+                           help="Sort order: date (newest), rating (lowest), votes (most helpful)")
     p_reviews.add_argument("--stats", action="store_true", help="Show rating distribution stats")
 
     # --- analyze ---
@@ -191,11 +199,15 @@ def main():
     p_analyze.add_argument("--model", default="qwen3.5:4b", help="Ollama model to use (default: qwen3.5:4b)")
     p_analyze.add_argument("--stars", type=int, default=None, choices=range(1, 6),
                            help="Max star rating to include", metavar="STARS")
+    p_analyze.add_argument("--min-stars", type=int, default=None, choices=range(1, 6),
+                           help="Min star rating to include", metavar="STARS")
     p_analyze.add_argument("--days", type=int, default=None, help="Only reviews from the last N days")
     p_analyze.add_argument("--keywords", default=None, help="Comma-separated keywords to filter by")
     p_analyze.add_argument("--version", default=None, help="Filter by app version")
     p_analyze.add_argument("--pages", type=int, default=3, choices=range(1, 11),
                            help="Pages to fetch, 1-10 (default: 3)", metavar="PAGES")
+    p_analyze.add_argument("--sort", choices=["date", "rating", "votes"], default=None,
+                           help="Sort order: date (newest), rating (lowest), votes (most helpful)")
     p_analyze.add_argument("--stats", action="store_true", help="Show rating distribution before analysis")
     p_analyze.add_argument("--list-models", action="store_true", help="List available Ollama models and exit")
 

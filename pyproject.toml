@@ -6,6 +6,9 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 keywords = ["app-store", "reviews", "scraper", "cli", "ai", "llm", "coding-agent"]
+authors = [
+    { name = "Vasilis Kayatas" },
+]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Environment :: Console",
@@ -20,6 +23,11 @@ dependencies = [
 [project.optional-dependencies]
 pandas = ["pandas>=1.5"]
 
+[project.urls]
+Homepage = "https://github.com/vkayatas/appstore-review-cli"
+Repository = "https://github.com/vkayatas/appstore-review-cli"
+Issues = "https://github.com/vkayatas/appstore-review-cli/issues"
+
 [project.scripts]
 appstore-reviews = "appinsight.cli:main"
 
@@ -29,3 +37,11 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["appinsight"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
