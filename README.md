@@ -29,37 +29,68 @@ Three commands to go from app name → filtered reviews.
 
 ### Using with an AI coding agent
 
-This repo includes instruction files that teach your agent the full CLI — install and ask:
+After installing, your agent doesn't know the CLI exists yet. You need to add a short instruction file to your project:
 
 <details>
 <summary><strong>Claude Code</strong></summary>
 
-Reads [`CLAUDE.md`](CLAUDE.md) automatically when you open this repo. No config needed.
+Claude Code reads `CLAUDE.md` from the project root on every session. Copy the instruction file into your project:
 
+```bash
+# From your project directory
+curl -sL https://raw.githubusercontent.com/vkayatas/appstore-review-cli/master/CLAUDE.md -o CLAUDE.md
+```
+
+Or if you already have a `CLAUDE.md`, append it:
+```bash
+echo "" >> CLAUDE.md
+curl -sL https://raw.githubusercontent.com/vkayatas/appstore-review-cli/master/CLAUDE.md >> CLAUDE.md
+```
+
+That's it. Now Claude knows every command, filter, and workflow. Ask:
 ```
 You: "What are Slack users complaining about this month?"
 ```
-Claude runs the CLI, fetches reviews, and analyzes them directly — no Ollama required.
 </details>
 
 <details>
 <summary><strong>GitHub Copilot</strong></summary>
 
-Discovers [`SKILL.md`](SKILL.md) as a workspace skill automatically. No config needed.
+Copilot discovers `SKILL.md` files in your workspace as skills. Copy it into your project:
 
+```bash
+# From your project directory
+curl -sL https://raw.githubusercontent.com/vkayatas/appstore-review-cli/master/SKILL.md -o SKILL.md
+```
+
+Or add to your existing GitHub Copilot instructions:
+```bash
+mkdir -p .github
+curl -sL https://raw.githubusercontent.com/vkayatas/appstore-review-cli/master/SKILL.md >> .github/copilot-instructions.md
+```
+
+Now Copilot invokes the CLI when you ask about app reviews:
 ```
 You: "Find crash reports for WhatsApp in the last 30 days"
 ```
-Copilot invokes `appstore-reviews` and reasons over the output.
 </details>
 
 <details>
 <summary><strong>Cursor / Windsurf / Others</strong></summary>
 
-No auto-discovery — you need to point the agent at the tool:
+These agents don't auto-discover instruction files. Add the CLI docs to your agent's rules:
 
-1. Add `CLAUDE.md` or `SKILL.md` content to your agent's system prompt or rules file, **or**
-2. Tell the agent: *"Use `appstore-reviews --help` to learn the CLI, then fetch Slack reviews"*
+```bash
+# Cursor
+mkdir -p .cursor/rules
+curl -sL https://raw.githubusercontent.com/vkayatas/appstore-review-cli/master/CLAUDE.md -o .cursor/rules/appstore-reviews.md
+
+# Windsurf
+curl -sL https://raw.githubusercontent.com/vkayatas/appstore-review-cli/master/CLAUDE.md -o .windsurfrules
+```
+
+Or just tell the agent once per session:
+> *"I have `appstore-reviews` CLI installed. Run `appstore-reviews --help` to learn it, then fetch Slack reviews."*
 </details>
 
 <details>
@@ -80,13 +111,7 @@ appstore-reviews reviews 803453959 --stars 2 --format text | your-llm "Summarize
 
 If you're using Claude Code, GitHub Copilot, Cursor, or another AI coding agent — **you don't need Ollama**. The agent itself is the LLM. It can run CLI commands and reason over the output directly.
 
-**How does the agent know about this tool?** This repo includes instruction files that agents discover automatically:
-
-- **Claude Code** reads [`CLAUDE.md`](CLAUDE.md) from the repo root — it contains the full CLI reference and analysis workflows.
-- **GitHub Copilot** discovers [`SKILL.md`](SKILL.md) — a skill definition that teaches it when and how to invoke the CLI.
-- **Cursor / Windsurf / Others** — point the agent at `appstore-reviews --help`, or add the CLI docs to your agent's context manually.
-
-Once the agent knows the CLI exists, just ask:
+**How does the agent know about this tool?** You copy an instruction file into your project (see [Quick Start above](#using-with-an-ai-coding-agent)). This file teaches the agent every command, filter, and analysis workflow. Once it's there, just ask:
 
 > "What are Slack users complaining about this month?"
 
@@ -304,14 +329,17 @@ Requires pandas: `pip install appstore-review-cli[pandas]`
 
 ## Works With Any AI Coding Agent
 
-Agents don't magically know this tool exists — they learn about it from instruction files in this repo. Each file is tailored to how that agent discovers context:
+Agents don't magically know this tool exists — you need to add an instruction file to your project. Each agent has a different discovery mechanism:
 
-| Agent | Discovery mechanism |
-|-------|-------------|
-| **Claude Code** | Reads [`CLAUDE.md`](CLAUDE.md) automatically on startup. Just ask: *"What are Slack users complaining about?"* |
-| **GitHub Copilot** | Discovers [`SKILL.md`](SKILL.md) as a workspace skill. Ask about app reviews and it invokes the CLI. |
-| **Cursor / Windsurf / Others** | No auto-discovery. Point the agent at `appstore-reviews --help` or paste the CLI docs into your system prompt. |
-| **No agent?** | Use `appstore-reviews analyze` with Ollama, or pipe output to any LLM. |
+| Agent | What to do | File |
+|-------|------------|------|
+| **Claude Code** | Copy [`CLAUDE.md`](CLAUDE.md) into your project root | Auto-read on every session |
+| **GitHub Copilot** | Copy [`SKILL.md`](SKILL.md) into your project root | Auto-discovered as workspace skill |
+| **Cursor** | Copy `CLAUDE.md` into `.cursor/rules/` | Read as agent rules |
+| **Windsurf** | Copy `CLAUDE.md` to `.windsurfrules` | Read as agent rules |
+| **No agent?** | No file needed | Use `analyze` with Ollama, or pipe to any LLM |
+
+See [Quick Start → Using with an AI coding agent](#using-with-an-ai-coding-agent) for copy-paste commands.
 
 ## Architecture
 

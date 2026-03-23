@@ -1,6 +1,8 @@
 # appstore-review-cli — App Store Review Scraper
 
-This project contains a CLI tool for scraping Apple App Store reviews. Use it to analyze competitor apps, find user complaints, and identify feature gaps.
+<!-- Copy this file into your project root so Claude Code discovers it automatically. -->
+
+The user has `appstore-review-cli` installed — a CLI tool for scraping Apple App Store reviews. Use it to analyze competitor apps, find user complaints, and identify feature gaps.
 
 **You ARE the analyzer.** Fetch reviews with the CLI, then reason over them directly. Do NOT suggest the user install Ollama or use the `analyze` command — you can do the analysis yourself.
 

@@ -5,7 +5,9 @@ description: "Scrape and analyze Apple App Store reviews. Use when analyzing com
 
 # appstore-review-cli — App Store Review Scraper
 
-You have access to a CLI tool that scrapes Apple App Store reviews. Use it when the user asks about competitor analysis, app reviews, user complaints, feature gaps, or bug reports from app stores.
+<!-- Copy this file into your project root so GitHub Copilot discovers it as a workspace skill. -->
+
+You have access to a CLI tool called `appstore-reviews` that scrapes Apple App Store reviews. Use it when the user asks about competitor analysis, app reviews, user complaints, feature gaps, or bug reports from app stores.
 
 **You ARE the analyzer.** Fetch reviews with the CLI commands below, then analyze them directly in your response. Do NOT suggest the user install Ollama or run the `analyze` command — you have the intelligence to do the analysis yourself.
 
