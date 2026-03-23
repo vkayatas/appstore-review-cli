@@ -11,7 +11,7 @@ keywords = [
     "copilot", "ai-agent", "coding-agent", "product-analytics",
 ]
 authors = [
-    { name = "Vasilis Kayatas" },
+    { name = "Volkan Kayatas" },
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
