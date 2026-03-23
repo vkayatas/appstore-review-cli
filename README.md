@@ -1,6 +1,6 @@
 # appstore-review-cli
 
-**Turn App Store reviews into product intelligence — from the terminal or through your AI coding agent.**
+**Turn App Store reviews into product intelligence - from the terminal or through your AI coding agent.**
 
 App Store reviews are the largest public dataset of unfiltered user feedback. But reading them on the App Store website is painful: no filtering, no export, no way to search across versions or countries. This tool fixes that.
 
@@ -9,8 +9,8 @@ App Store reviews are the largest public dataset of unfiltered user feedback. Bu
 - **Competitor research**: Pull 1-star reviews for any app and find the feature gaps your product can fill.
 - **Bug triage**: Filter reviews by keywords like "crash", "freeze", "login" and group by app version.
 - **Version monitoring**: Check how users reacted to a specific release before your next sprint.
-- **Multi-country insights**: Same app, different markets — compare complaints across `us`, `de`, `jp`, etc.
-- **AI-native**: Your coding agent (Copilot, Claude Code, Cursor) can fetch and analyze reviews in natural language. No Ollama needed — the agent IS the LLM.
+- **Multi-country insights**: Same app, different markets - compare complaints across `us`, `de`, `jp`, etc.
+- **AI-native**: Your coding agent (Copilot, Claude Code, Cursor) can fetch and analyze reviews in natural language. No Ollama needed - the agent IS the LLM.
 
 No API keys. No accounts. No servers. Just `pip install` and go.
 
@@ -58,7 +58,7 @@ Then just ask in natural language:
 
 - *"What are the top complaints about Slack this month?"*
 - *"Find crash reports for WhatsApp in the last 30 days"*
-- *"Compare Notion vs Obsidian — what do users hate about each?"*
+- *"Compare Notion vs Obsidian - what do users hate about each?"*
 - *"What features are German Duolingo users requesting?"*
 
 The agent runs the CLI, fetches reviews, and analyzes them directly. No Ollama, no extra setup.
@@ -82,7 +82,7 @@ appstore-reviews reviews 803453959 --stars 2 --format text | your-llm "Summarize
 
 ## All Options
 
-### `search` — Find an app by name
+### `search` - Find an app by name
 
 | Flag | Description |
 |------|-------------|
@@ -90,7 +90,7 @@ appstore-reviews reviews 803453959 --stars 2 --format text | your-llm "Summarize
 | `--format json` | Output as JSON instead of table |
 | `--country de` | App Store region (default: `us`) |
 
-### `reviews <APP_ID>` — Fetch and filter reviews
+### `reviews <APP_ID>` - Fetch and filter reviews
 
 | Flag | Description |
 |------|-------------|
@@ -107,7 +107,7 @@ appstore-reviews reviews 803453959 --stars 2 --format text | your-llm "Summarize
 
 All filters stack with AND logic.
 
-### `analyze <APP_ID>` — LLM analysis via Ollama
+### `analyze <APP_ID>` - LLM analysis via Ollama
 
 | Flag | Description |
 |------|-------------|
@@ -117,7 +117,7 @@ All filters stack with AND logic.
 
 Plus all the same filters as `reviews` (`--stars`, `--min-stars`, `--days`, `--keywords`, `--version`, `--pages`, `--sort`, `--stats`, `--country`).
 
-### `setup <agent>` — Install agent instructions
+### `setup <agent>` - Install agent instructions
 
 | Argument / Flag | Description |
 |-----------------|-------------|
@@ -155,7 +155,7 @@ Install with pandas: `pip install appstore-review-cli[pandas]`
 - **Review limit**: Apple returns max ~500 reviews per country (10 pages × 50). This is Apple's limit.
 - **Deduplication**: Reviews are automatically deduplicated across pages.
 - **Validation**: `--stars`/`--min-stars` accept 1-5, `--pages` accepts 1-10. Invalid values are rejected.
-- **No results?** Filters are too narrow — try fewer keywords, more days, or a higher star ceiling.
+- **No results?** Filters are too narrow - try fewer keywords, more days, or a higher star ceiling.
 
 ## Development
 
