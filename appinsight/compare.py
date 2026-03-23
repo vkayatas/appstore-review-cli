@@ -58,7 +58,7 @@ def _categorize_complaints(reviews: list[Review]) -> dict[str, int]:
 
 
 def compare_apps(
-    app_ids: list[int],
+    app_ids: list[str],
     country: str = "us",
     pages: int = 3,
     max_rating: int | None = None,
@@ -66,14 +66,23 @@ def compare_apps(
     keywords: list[str] | None = None,
     days: int | None = None,
     sort_by: str | None = None,
+    store: str = "apple",
 ) -> str:
     """Fetch reviews for multiple apps and produce a comparison report."""
+    if store == "google":
+        from .google_play import lookup_play, fetch_play_reviews
+        _lookup = lambda aid, **kw: lookup_play(aid, **kw)
+        _fetch = lambda aid, **kw: fetch_play_reviews(aid, **kw)
+    else:
+        _lookup = lambda aid, **kw: lookup_app(aid, **kw)
+        _fetch = lambda aid, **kw: fetch_reviews(aid, **kw)
+
     app_data: list[dict] = []
 
     for app_id in app_ids:
         # Lookup app info
         try:
-            app = lookup_app(app_id, country=country)
+            app = _lookup(app_id, country=country)
         except requests.RequestException:
             app = None
 
@@ -81,7 +90,7 @@ def compare_apps(
         print(f"Fetching reviews for: {name}...", file=sys.stderr)
 
         # Fetch and filter
-        reviews = fetch_reviews(app_id, country=country, pages=pages)
+        reviews = _fetch(app_id, country=country, pages=pages)
         filtered = apply_filters(
             reviews,
             max_rating=max_rating,

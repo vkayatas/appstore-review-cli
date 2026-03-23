@@ -49,7 +49,7 @@ class Review:
 
 @dataclass
 class AppInfo:
-    app_id: int
+    app_id: str
     name: str
     developer: str
     avg_rating: float
@@ -85,7 +85,7 @@ def search_app(query: str, country: str = "us", limit: int = 5) -> list[AppInfo]
     for r in data.get("results", []):
         results.append(
             AppInfo(
-                app_id=r["trackId"],
+                app_id=str(r["trackId"]),
                 name=r["trackName"],
                 developer=r.get("artistName", ""),
                 avg_rating=r.get("averageUserRating", 0.0),
@@ -97,7 +97,7 @@ def search_app(query: str, country: str = "us", limit: int = 5) -> list[AppInfo]
     return results
 
 
-def lookup_app(app_id: int, country: str = "us") -> Optional[AppInfo]:
+def lookup_app(app_id: str, country: str = "us") -> Optional[AppInfo]:
     """Look up an app by its numeric ID."""
     resp = requests.get(
         LOOKUP_URL,
@@ -118,7 +118,7 @@ def lookup_app(app_id: int, country: str = "us") -> Optional[AppInfo]:
 
     r = results[0]
     return AppInfo(
-        app_id=r["trackId"],
+        app_id=str(r["trackId"]),
         name=r["trackName"],
         developer=r.get("artistName", ""),
         avg_rating=r.get("averageUserRating", 0.0),
@@ -151,7 +151,7 @@ def _parse_entry(entry: dict) -> Optional[Review]:
 
 
 def fetch_reviews(
-    app_id: int,
+    app_id: str,
     country: str = "us",
     pages: int = 10,
 ) -> list[Review]:

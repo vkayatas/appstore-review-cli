@@ -1,11 +1,12 @@
 # appstore-review-cli
 
-**Turn App Store reviews into product intelligence - from the terminal or through your AI coding agent.**
+**Turn App Store and Google Play reviews into product intelligence - from the terminal or through your AI coding agent.**
 
-App Store reviews are the largest public dataset of unfiltered user feedback. But reading them on the App Store website is painful: no filtering, no export, no way to search across versions or countries. This tool fixes that.
+App store reviews are the largest public dataset of unfiltered user feedback. But reading them on the store websites is painful: no filtering, no export, no way to search across versions or countries. This tool fixes that.
 
 ## Why Use This?
 
+- **Two stores**: Apple App Store and Google Play - same filters, same output, one tool.
 - **Competitor research**: Pull 1-star reviews for any app and find the feature gaps your product can fill.
 - **Bug triage**: Filter reviews by keywords like "crash", "freeze", "login" and group by app version.
 - **Version monitoring**: Check how users reacted to a specific release before your next sprint.
@@ -18,6 +19,11 @@ No API keys. No accounts. No servers. Just `pip install` and go.
 
 ```bash
 pip install git+https://github.com/vkayatas/appstore-review-cli.git
+```
+
+For Google Play support:
+```bash
+pip install "appstore-review-cli[google] @ git+https://github.com/vkayatas/appstore-review-cli.git"
 ```
 
 ## Quick Start
@@ -44,6 +50,11 @@ appstore-reviews reviews 803453959 --stars 2 --format json > reviews.json
 
 # Compare two apps side by side
 appstore-reviews compare 803453959 310633997 --stars 2 --pages 3
+
+# Google Play - use --store google with package names
+appstore-reviews --store google search "Slack"
+appstore-reviews --store google reviews com.Slack --stars 2 --days 30
+appstore-reviews --store google compare com.Slack com.microsoft.teams --stars 2
 ```
 
 ## Agent Integration
@@ -85,6 +96,13 @@ appstore-reviews reviews 803453959 --stars 2 --format text | your-llm "Summarize
 
 ## All Options
 
+### Global flags (apply to all commands)
+
+| Flag | Description |
+|------|-------------|
+| `--store google` | Use Google Play instead of Apple App Store (default: `apple`) |
+| `--country de` | Store region (default: `us`) |
+
 ### `search` - Find an app by name
 
 | Flag | Description |
@@ -92,6 +110,8 @@ appstore-reviews reviews 803453959 --stars 2 --format text | your-llm "Summarize
 | `--limit 10` | Max results (default: 5) |
 | `--format json` | Output as JSON instead of table |
 | `--country de` | App Store region (default: `us`) |
+
+For Google Play, app IDs are package names (e.g. `com.Slack`). For Apple, they're numeric (e.g. `803453959`).
 
 ### `reviews <APP_ID>` - Fetch and filter reviews
 
@@ -162,9 +182,13 @@ reviews = get_reviews(618783545, stars=2, days=30)
 df = get_reviews_df(618783545, stars=2, pages=5)
 df.groupby("version")["rating"].mean()
 df[df["content"].str.contains("crash", case=False)]
+# Google Play
+reviews = get_reviews("com.Slack", stars=2, days=30, store="google")
+df = get_reviews_df("com.Slack", stars=2, pages=5, store="google")
 ```
 
 Install with pandas: `pip install appstore-review-cli[pandas]`
+Install with Google Play: `pip install appstore-review-cli[google]`
 
 ## Good to Know
 
@@ -172,6 +196,7 @@ Install with pandas: `pip install appstore-review-cli[pandas]`
 - **Review limit**: Apple returns max ~500 reviews per country (10 pages × 50). This is Apple's limit.
 - **Deduplication**: Reviews are automatically deduplicated across pages.
 - **Validation**: `--stars`/`--min-stars` accept 1-5, `--pages` accepts 1-10. Invalid values are rejected.
+- **Google Play search**: The first search result sometimes lacks a package name (library limitation). Use the package name directly if your app doesn't appear (find it in the Google Play URL).
 - **No results?** Filters are too narrow - try fewer keywords, more days, or a higher star ceiling.
 
 ## Development
@@ -185,6 +210,6 @@ uv run pytest
 
 ## Roadmap
 
-- [ ] Google Play Store support
+- [x] Google Play Store support
 - [x] Multi-app comparison command
 - [ ] Version diff (sentiment changes between releases)

@@ -1,7 +1,7 @@
 [project]
 name = "appstore-review-cli"
 version = "0.1.0"
-description = "Scrape App Store reviews. Filter the noise. Feed the signal to your coding agent."
+description = "Scrape App Store and Google Play reviews. Filter the noise. Feed the signal to your coding agent."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
@@ -22,6 +22,9 @@ dependencies = [
 
 [project.optional-dependencies]
 pandas = ["pandas>=1.5"]
+google = [
+    "google-play-scraper>=1.2",
+]
 
 [project.urls]
 Homepage = "https://github.com/vkayatas/appstore-review-cli"

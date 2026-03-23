@@ -19,13 +19,22 @@ from .analyzer import analyze, check_ollama, list_models
 from .compare import compare_apps
 from .setup import cmd_setup, AGENTS
 
+STORES = ["apple", "google"]
+
 
 def cmd_search(args):
-    """Search the App Store by name."""
+    """Search the App Store or Google Play by name."""
     try:
-        apps = search_app(args.query, country=args.country, limit=args.limit)
+        if args.store == "google":
+            from .google_play import search_play
+            apps = search_play(args.query, country=args.country, limit=args.limit)
+        else:
+            apps = search_app(args.query, country=args.country, limit=args.limit)
+    except ImportError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
     except requests.RequestException as e:
-        print(f"Error: Failed to search App Store: {e}", file=sys.stderr)
+        print(f"Error: Failed to search: {e}", file=sys.stderr)
         sys.exit(1)
 
     if not apps:
@@ -45,18 +54,31 @@ def cmd_reviews(args):
     """Fetch and filter reviews."""
     app_id = args.app_id
 
-    # Show what we're fetching
     try:
-        app = lookup_app(app_id, country=args.country)
-    except requests.RequestException:
-        app = None
+        if args.store == "google":
+            from .google_play import lookup_play, fetch_play_reviews
+            app = lookup_play(app_id, country=args.country)
+            reviews = fetch_play_reviews(app_id, country=args.country, pages=args.pages)
+        else:
+            try:
+                int(app_id)
+            except ValueError:
+                print(f"Error: Apple App Store IDs must be numeric (got '{app_id}'). "
+                      "Did you mean --store google?", file=sys.stderr)
+                sys.exit(1)
+            try:
+                app = lookup_app(app_id, country=args.country)
+            except requests.RequestException:
+                app = None
+            reviews = fetch_reviews(app_id, country=args.country, pages=args.pages)
+    except ImportError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
 
     if app:
         print(f"Fetching reviews for: {app.name} (by {app.developer})", file=sys.stderr)
     else:
         print(f"Fetching reviews for app ID: {app_id}", file=sys.stderr)
-
-    reviews = fetch_reviews(app_id, country=args.country, pages=args.pages)
     print(f"Fetched {len(reviews)} reviews", file=sys.stderr)
 
     # Apply filters
@@ -114,16 +136,30 @@ def cmd_analyze(args):
 
     # Fetch
     try:
-        app = lookup_app(app_id, country=args.country)
-    except requests.RequestException:
-        app = None
+        if args.store == "google":
+            from .google_play import lookup_play, fetch_play_reviews
+            app = lookup_play(args.app_id, country=args.country)
+            reviews = fetch_play_reviews(args.app_id, country=args.country, pages=args.pages)
+        else:
+            try:
+                int(args.app_id)
+            except ValueError:
+                print(f"Error: Apple App Store IDs must be numeric (got '{args.app_id}'). "
+                      "Did you mean --store google?", file=sys.stderr)
+                sys.exit(1)
+            try:
+                app = lookup_app(app_id, country=args.country)
+            except requests.RequestException:
+                app = None
+            reviews = fetch_reviews(app_id, country=args.country, pages=args.pages)
+    except ImportError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
 
     if app:
         print(f"Fetching reviews for: {app.name} (by {app.developer})", file=sys.stderr)
     else:
         print(f"Fetching reviews for app ID: {app_id}", file=sys.stderr)
-
-    reviews = fetch_reviews(app_id, country=args.country, pages=args.pages)
     print(f"Fetched {len(reviews)} reviews", file=sys.stderr)
 
     # Apply filters
@@ -163,26 +199,41 @@ def to_json_apps(apps):
 
 def cmd_compare(args):
     """Compare reviews across multiple apps."""
+    if args.store == "apple":
+        for aid in args.app_ids:
+            try:
+                int(aid)
+            except ValueError:
+                print(f"Error: Apple App Store IDs must be numeric (got '{aid}'). "
+                      "Did you mean --store google?", file=sys.stderr)
+                sys.exit(1)
     keywords = args.keywords.split(",") if args.keywords else None
-    result = compare_apps(
-        app_ids=args.app_ids,
-        country=args.country,
-        pages=args.pages,
-        max_rating=args.stars,
-        min_rating=args.min_stars,
-        keywords=keywords,
-        days=args.days,
-        sort_by=args.sort,
-    )
+    try:
+        result = compare_apps(
+            app_ids=args.app_ids,
+            country=args.country,
+            pages=args.pages,
+            max_rating=args.stars,
+            min_rating=args.min_stars,
+            keywords=keywords,
+            days=args.days,
+            sort_by=args.sort,
+            store=args.store,
+        )
+    except ImportError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
     print(result)
 
 
 def main():
     parser = argparse.ArgumentParser(
         prog="appstore-reviews",
-        description="Scrape and filter Apple App Store reviews. Built for coding agents.",
+        description="Scrape and filter App Store & Google Play reviews. Built for coding agents.",
     )
     parser.add_argument("--country", default="us", help="ISO country code (default: us)")
+    parser.add_argument("--store", choices=STORES, default="apple",
+                        help="App store: apple (default) or google")
 
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -194,7 +245,7 @@ def main():
 
     # --- reviews ---
     p_reviews = sub.add_parser("reviews", help="Fetch and filter reviews")
-    p_reviews.add_argument("app_id", type=int, help="Numeric App Store ID (use 'search' to find it)")
+    p_reviews.add_argument("app_id", help="Numeric App Store ID or Google Play package name")
     p_reviews.add_argument("--stars", type=int, default=None, choices=range(1, 6),
                            help="Max star rating to include (e.g. 2 = 1-2 stars)", metavar="STARS")
     p_reviews.add_argument("--min-stars", type=int, default=None, choices=range(1, 6),
@@ -211,7 +262,8 @@ def main():
 
     # --- analyze ---
     p_analyze = sub.add_parser("analyze", help="Fetch reviews and analyze with a local LLM (Ollama)")
-    p_analyze.add_argument("app_id", type=int, nargs="?", default=None, help="Numeric App Store ID")
+    p_analyze.add_argument("app_id", nargs="?", default=None,
+                           help="Numeric App Store ID or Google Play package name")
     p_analyze.add_argument("--mode", choices=["summary", "gaps", "bugs"], default="summary",
                            help="Analysis mode: summary, gaps (feature gaps), bugs (technical issues)")
     p_analyze.add_argument("--model", default="qwen3.5:4b", help="Ollama model to use (default: qwen3.5:4b)")
@@ -238,7 +290,8 @@ def main():
 
     # --- compare ---
     p_compare = sub.add_parser("compare", help="Compare reviews across multiple apps")
-    p_compare.add_argument("app_ids", type=int, nargs="+", help="Two or more numeric App Store IDs")
+    p_compare.add_argument("app_ids", nargs="+",
+                           help="Two or more app IDs (numeric for Apple, package name for Google)")
     p_compare.add_argument("--stars", type=int, default=None, choices=range(1, 6),
                            help="Max star rating to include", metavar="STARS")
     p_compare.add_argument("--min-stars", type=int, default=None, choices=range(1, 6),

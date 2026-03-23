@@ -20,19 +20,18 @@ from .scraper import fetch_reviews, search_app, lookup_app
 from .filters import apply_filters
 
 
-def search(query: str, country: str = "us", limit: int = 5) -> list[dict]:
-    """Search the App Store and return results as a list of dicts.
-
-    >>> from appinsight.dataframe import search
-    >>> search("Slack", limit=3)
-    [{'app_id': 618783545, 'name': 'Slack', ...}, ...]
-    """
-    apps = search_app(query, country=country, limit=limit)
+def search(query: str, country: str = "us", limit: int = 5, store: str = "apple") -> list[dict]:
+    """Search the App Store or Google Play and return results as a list of dicts."""
+    if store == "google":
+        from .google_play import search_play
+        apps = search_play(query, country=country, limit=limit)
+    else:
+        apps = search_app(query, country=country, limit=limit)
     return [a.to_dict() for a in apps]
 
 
 def get_reviews(
-    app_id: int,
+    app_id: str,
     stars: Optional[int] = None,
     min_stars: Optional[int] = None,
     days: Optional[int] = None,
@@ -41,17 +40,18 @@ def get_reviews(
     sort_by: Optional[str] = None,
     country: str = "us",
     pages: int = 3,
+    store: str = "apple",
 ) -> list[dict]:
     """Fetch filtered reviews as a list of dicts.
 
     Works without pandas. Each dict has keys:
     id, title, content, rating, author, date, version, vote_sum, vote_count
-
-    >>> reviews = get_reviews(618783545, stars=2, days=30)
-    >>> len(reviews)
-    18
     """
-    raw = fetch_reviews(app_id, country=country, pages=pages)
+    if store == "google":
+        from .google_play import fetch_play_reviews
+        raw = fetch_play_reviews(app_id, country=country, pages=pages)
+    else:
+        raw = fetch_reviews(app_id, country=country, pages=pages)
     filtered = apply_filters(
         raw,
         max_rating=stars,
@@ -65,7 +65,7 @@ def get_reviews(
 
 
 def get_reviews_df(
-    app_id: int,
+    app_id: str,
     stars: Optional[int] = None,
     min_stars: Optional[int] = None,
     days: Optional[int] = None,
@@ -74,6 +74,7 @@ def get_reviews_df(
     sort_by: Optional[str] = None,
     country: str = "us",
     pages: int = 3,
+    store: str = "apple",
 ):
     """Fetch filtered reviews as a pandas DataFrame.
 
@@ -81,13 +82,6 @@ def get_reviews_df(
 
     Columns: id, title, content, rating, author, date, version, vote_sum, vote_count
     The 'date' column is automatically converted to datetime.
-
-    >>> df = get_reviews_df(618783545, stars=2, days=30)
-    >>> df.groupby("rating").size()
-    rating
-    1    14
-    2     4
-    dtype: int64
     """
     try:
         import pandas as pd
@@ -107,6 +101,7 @@ def get_reviews_df(
         sort_by=sort_by,
         country=country,
         pages=pages,
+        store=store,
     )
 
     if not data:
