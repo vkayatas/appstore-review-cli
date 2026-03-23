@@ -7,13 +7,14 @@ The user has `appstore-review-cli` installed — a CLI tool for scraping Apple A
 
 **You ARE the analyzer.** Fetch reviews with the CLI, then reason over them directly. Do NOT suggest the user install Ollama or use the `analyze` command — you can do the analysis yourself.
 
+**Always use the `appstore-reviews` CLI command in the terminal. Do NOT use the Python API or import statements — use the bash commands shown below.** If the command is not found, install it first: `pip install appstore-review-cli`
+
 ## Quick Reference
 
 Search for an app:
 ```bash
 appstore-reviews search "app name"
 ```
-Fallback: `python3 cli.py search "app name"`
 
 Search with more results or JSON output:
 ```bash
@@ -160,9 +161,9 @@ appstore-reviews trend <APP_ID> --pages 5
 ```
 The trend command shows weekly or monthly rating averages with sparkline visualizations. Use `--period month` for a broader view or `--stars 2` to track negative sentiment trends.
 
-## Python API
+## Python API (for scripts/notebooks only)
 
-For programmatic use (e.g., in a script or notebook the user is building):
+Only use this if the user is explicitly writing Python code or a notebook — otherwise always use the CLI commands above.
 ```python
 from appinsight import get_reviews, get_reviews_df
 
