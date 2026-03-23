@@ -18,6 +18,7 @@ from .formatters import to_json, to_csv, to_markdown, to_text, summary_stats
 from .analyzer import analyze, check_ollama, list_models
 from .compare import compare_apps
 from .version_diff import version_diff
+from .trend import trend as trend_report
 from .setup import cmd_setup, AGENTS
 
 STORES = ["apple", "google"]
@@ -256,6 +257,34 @@ def cmd_version_diff(args):
     print(result)
 
 
+def cmd_trend(args):
+    """Show rating trend over time."""
+    if args.store == "apple":
+        try:
+            int(args.app_id)
+        except ValueError:
+            print(f"Error: Apple App Store IDs must be numeric (got '{args.app_id}'). "
+                  "Did you mean --store google?", file=sys.stderr)
+            sys.exit(1)
+    keywords = args.keywords.split(",") if args.keywords else None
+    try:
+        result = trend_report(
+            app_id=args.app_id,
+            country=args.country,
+            pages=args.pages,
+            period=args.period,
+            max_rating=args.stars,
+            min_rating=args.min_stars,
+            keywords=keywords,
+            days=args.days,
+            store=args.store,
+        )
+    except ImportError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
+    print(result)
+
+
 def main():
     parser = argparse.ArgumentParser(
         prog="appstore-reviews",
@@ -348,6 +377,21 @@ def main():
     p_vdiff.add_argument("--pages", type=int, default=5, choices=range(1, 11),
                          help="Pages to fetch (1-10, default: 5)", metavar="PAGES")
 
+    # --- trend ---
+    p_trend = sub.add_parser("trend", help="Show rating trend over time")
+    p_trend.add_argument("app_id",
+                         help="Numeric App Store ID or Google Play package name")
+    p_trend.add_argument("--period", choices=["week", "month"], default="week",
+                         help="Group by: week (default) or month")
+    p_trend.add_argument("--stars", type=int, default=None, choices=range(1, 6),
+                         help="Max star rating to include", metavar="STARS")
+    p_trend.add_argument("--min-stars", type=int, default=None, choices=range(1, 6),
+                         help="Min star rating to include", metavar="STARS")
+    p_trend.add_argument("--days", type=int, default=None, help="Only reviews from the last N days")
+    p_trend.add_argument("--keywords", default=None, help="Comma-separated keywords to filter by")
+    p_trend.add_argument("--pages", type=int, default=5, choices=range(1, 11),
+                         help="Pages to fetch (1-10, default: 5)", metavar="PAGES")
+
     args = parser.parse_args()
 
     if args.command == "search":
@@ -366,6 +410,8 @@ def main():
         cmd_compare(args)
     elif args.command == "version-diff":
         cmd_version_diff(args)
+    elif args.command == "trend":
+        cmd_trend(args)
 
 
 if __name__ == "__main__":

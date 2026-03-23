@@ -79,6 +79,14 @@ appstore-reviews version-diff <APP_ID> --old 4.23.0 --new 4.29.149
 ```
 Shows: version comparison table, category changes with arrows, new/resolved issues, top keywords per version. Auto-detects the two most reviewed versions if `--old`/`--new` are omitted.
 
+### Trend
+Show rating trend over time:
+```bash
+appstore-reviews trend <APP_ID> --pages 5
+appstore-reviews trend <APP_ID> --period month --stars 2
+```
+Shows: per-period average rating, review count, trend arrows (▲/▼), sparkline bars, star distributions, and overall trend direction.
+
 ### Gap Finder
 Fetch 1-2 star reviews and analyze for unmet needs:
 ```bash
@@ -133,6 +141,12 @@ appstore-reviews reviews 803453959 --stars 2 --country de --format text
 appstore-reviews --store google reviews com.spotify.music --stars 2 --days 60 --format text
 ```
 Group complaints by category: performance, features, bugs.
+
+**"How has Slack's rating been trending?"**
+```bash
+appstore-reviews trend 803453959 --pages 5
+```
+The trend command shows weekly averages with sparklines. Use `--period month` for broader view.
 
 ## Python API
 

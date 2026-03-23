@@ -59,6 +59,10 @@ appstore-reviews --store google compare com.Slack com.microsoft.teams --stars 2
 # Compare sentiment between app versions
 appstore-reviews version-diff 803453959 --pages 5
 appstore-reviews version-diff 803453959 --old 4.23.0 --new 4.29.149
+
+# Show rating trend over time (weekly or monthly)
+appstore-reviews trend 803453959 --pages 5
+appstore-reviews trend 803453959 --period month --stars 2
 ```
 
 ## Agent Integration
@@ -172,6 +176,19 @@ Outputs: overview table, per-app rating distribution, top complaint categories, 
 
 Outputs: version comparison table, rating distributions, complaint category changes (with arrows), new/resolved issues, top keywords per version. Versions are auto-detected from the two most reviewed if not specified.
 
+### `trend <APP_ID>` - Show rating trend over time
+
+| Flag | Description |
+|------|-------------|
+| `--period week` | Group by `week` (default) or `month` |
+| `--stars 2` | Max star rating to include (1-5) |
+| `--min-stars 3` | Min star rating (1-5) |
+| `--days 90` | Only reviews from the last N days |
+| `--keywords crash,bug` | Only reviews containing these words |
+| `--pages 5` | Pages to fetch (1-10, default 5) |
+
+Outputs: per-period table with average rating, review count, trend arrows (▲/▼), ASCII sparkline bars, mini star distributions, and overall trend summary.
+
 ### `setup <agent>` - Install agent instructions
 
 | Argument / Flag | Description |
@@ -231,3 +248,4 @@ uv run pytest
 - [x] Google Play Store support
 - [x] Multi-app comparison command
 - [x] Version diff (sentiment changes between releases)
+- [x] Rating trend over time (weekly/monthly)

@@ -70,6 +70,13 @@ appstore-reviews version-diff <APP_ID> --old 4.23.0 --new 4.29.149
 ```
 Shows: version comparison table, category changes with arrows, new/resolved issues, top keywords per version. Auto-detects the two most reviewed versions if `--old`/`--new` are omitted.
 
+Show rating trend over time:
+```bash
+appstore-reviews trend <APP_ID> --pages 5
+appstore-reviews trend <APP_ID> --period month --stars 2
+```
+Shows: per-period average rating, review count, trend arrows (▲/▼), sparkline bars, star distributions, and overall trend direction.
+
 All options: `appstore-reviews reviews --help`
 
 ## Important Behavior
@@ -138,6 +145,13 @@ appstore-reviews search "Notion"
 appstore-reviews version-diff <APP_ID> --pages 5
 ```
 The version-diff command shows exactly how sentiment shifted: rating changes, new/resolved complaint categories, and top keywords per version.
+
+**User asks: "How has Slack's rating been trending?"**
+```bash
+appstore-reviews search "Slack"
+appstore-reviews trend <APP_ID> --pages 5
+```
+The trend command shows weekly or monthly rating averages with sparkline visualizations. Use `--period month` for a broader view or `--stars 2` to track negative sentiment trends.
 
 ## Python API
 
