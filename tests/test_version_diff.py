@@ -2,8 +2,8 @@
 
 import pytest
 
-from appinsight.scraper import Review
-from appinsight.version_diff import _group_by_version, _pick_versions
+from appinsight.scrapers.appstore import Review
+from appinsight.commands.version_diff import _group_by_version, _pick_versions
 
 
 def _make_review(**overrides) -> Review:

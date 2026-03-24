@@ -1,10 +1,10 @@
 """Python API for working with App Store reviews as data.
 
 Use this module to fetch reviews programmatically and get them as
-dictionaries or pandas DataFrames — ideal for notebooks and data analysis.
+dictionaries or pandas DataFrames - ideal for notebooks and data analysis.
 
 Usage:
-    from appinsight.dataframe import get_reviews, get_reviews_df
+    from appinsight import get_reviews, get_reviews_df
 
     # As list of dicts (no pandas needed)
     reviews = get_reviews(618783545, stars=2, days=30)
@@ -16,14 +16,14 @@ Usage:
 
 from typing import Optional
 
-from .scraper import fetch_reviews, search_app, lookup_app
-from .filters import apply_filters
+from appinsight.scrapers.appstore import fetch_reviews, search_app, lookup_app
+from appinsight.output.filters import apply_filters
 
 
 def search(query: str, country: str = "us", limit: int = 5, store: str = "apple") -> list[dict]:
     """Search the App Store or Google Play and return results as a list of dicts."""
     if store == "google":
-        from .google_play import search_play
+        from appinsight.scrapers.google_play import search_play
         apps = search_play(query, country=country, limit=limit)
     else:
         apps = search_app(query, country=country, limit=limit)
@@ -48,7 +48,7 @@ def get_reviews(
     id, title, content, rating, author, date, version, vote_sum, vote_count
     """
     if store == "google":
-        from .google_play import fetch_play_reviews
+        from appinsight.scrapers.google_play import fetch_play_reviews
         raw = fetch_play_reviews(app_id, country=country, pages=pages)
     else:
         raw = fetch_reviews(app_id, country=country, pages=pages)

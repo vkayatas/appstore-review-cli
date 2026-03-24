@@ -1,7 +1,7 @@
 """Review analyzer using local LLMs via Ollama.
 
 Provides built-in analysis modes (summary, gaps, bugs) so users don't
-have to pipe output manually. Uses the Ollama REST API — no extra
+have to pipe output manually. Uses the Ollama REST API - no extra
 Python packages needed beyond `requests`.
 """
 
@@ -10,7 +10,7 @@ import sys
 
 import requests
 
-from .scraper import Review
+from appinsight.scrapers.appstore import Review
 
 OLLAMA_URL = "http://localhost:11434"
 DEFAULT_MODEL = "qwen3.5:4b"
@@ -21,11 +21,11 @@ PROMPTS = {
         "You are an app review analyst. Summarize the following App Store reviews "
         "into a concise report. Group by theme (UX, bugs, missing features, praise). "
         "Rank themes by how often they appear. Cite specific reviews as evidence. "
-        "Keep the summary under 500 words. Be direct — no filler."
+        "Keep the summary under 500 words. Be direct - no filler."
     ),
     "gaps": (
         "You are a product strategist analyzing negative App Store reviews. "
-        "Identify feature gaps — things users wish the app had, features competitors "
+        "Identify feature gaps - things users wish the app had, features competitors "
         "do better, and missing functionality. Group by feature category, rank by "
         "frequency, and cite specific reviews. Output a prioritized list of gaps "
         "the development team should address."
@@ -88,7 +88,7 @@ def analyze(
 
     Args:
         reviews: List of Review objects to analyze.
-        mode: Analysis mode — 'summary', 'gaps', or 'bugs'.
+        mode: Analysis mode - 'summary', 'gaps', or 'bugs'.
         model: Ollama model name.
         stream: If True, print tokens as they arrive and return full text.
 
@@ -116,7 +116,7 @@ def analyze(
             f"{OLLAMA_URL}/api/chat",
             json=payload,
             stream=stream,
-            timeout=None,  # No timeout — model loading + inference can take minutes
+            timeout=None,  # No timeout - model loading + inference can take minutes
         )
         resp.raise_for_status()
     except requests.ConnectionError:

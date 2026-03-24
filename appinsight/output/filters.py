@@ -3,7 +3,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from .scraper import Review
+from appinsight.scrapers.appstore import Review
 
 
 def by_rating(reviews: list[Review], max_rating: int = 2, min_rating: int = 1) -> list[Review]:
@@ -54,7 +54,7 @@ def sort_reviews(reviews: list[Review], sort_by: str = "date") -> list[Review]:
         return sorted(reviews, key=lambda r: r.rating)
     elif sort_by == "votes":
         return sorted(reviews, key=lambda r: r.vote_sum, reverse=True)
-    else:  # date (default) — newest first
+    else:  # date (default) - newest first
         return sorted(reviews, key=lambda r: r.date, reverse=True)
 
 

@@ -1,6 +1,6 @@
-"""Tests for appinsight.scraper — RSS entry parsing and data classes."""
+"""Tests for appinsight.scraper - RSS entry parsing and data classes."""
 
-from appinsight.scraper import _parse_entry, Review, AppInfo
+from appinsight.scrapers.appstore import _parse_entry, Review, AppInfo
 
 
 # ---------------------------------------------------------------------------
@@ -34,7 +34,7 @@ class TestParseEntry:
             "id": {"label": "some-app-id"},
             "title": {"label": "My App"},
             "content": {"label": "App description"},
-            # No im:rating — this is app metadata
+            # No im:rating - this is app metadata
         }
         assert _parse_entry(entry) is None
 

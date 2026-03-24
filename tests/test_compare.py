@@ -2,8 +2,8 @@
 
 import pytest
 
-from appinsight.scraper import Review
-from appinsight.compare import _top_keywords, _categorize_complaints
+from appinsight.scrapers.appstore import Review
+from appinsight.commands.compare import _top_keywords, _categorize_complaints
 
 
 def _make_review(**overrides) -> Review:

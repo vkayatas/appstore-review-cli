@@ -8,10 +8,9 @@ from collections import Counter
 
 import requests
 
-from .scraper import fetch_reviews, lookup_app, AppInfo
-from .filters import apply_filters
-from .formatters import summary_stats
-from .scraper import Review
+from appinsight.scrapers.appstore import fetch_reviews, lookup_app, AppInfo, Review
+from appinsight.output.filters import apply_filters
+from appinsight.output.formatters import summary_stats
 
 
 def _top_keywords(reviews: list[Review], n: int = 10) -> list[tuple[str, int]]:
@@ -74,7 +73,7 @@ def compare_apps(
 ) -> str:
     """Fetch reviews for multiple apps and produce a comparison report."""
     if store == "google":
-        from .google_play import lookup_play, fetch_play_reviews
+        from appinsight.scrapers.google_play import lookup_play, fetch_play_reviews
         _lookup = lambda aid, **kw: lookup_play(aid, **kw)
         _fetch = lambda aid, **kw: fetch_play_reviews(aid, **kw)
     else:

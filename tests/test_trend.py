@@ -5,8 +5,8 @@ from unittest.mock import patch
 
 import pytest
 
-from appinsight.scraper import Review
-from appinsight.trend import _parse_date, _group_by_period, _sparkline, trend
+from appinsight.scrapers.appstore import Review
+from appinsight.commands.trend import _parse_date, _group_by_period, _sparkline, trend
 
 
 def _make_review(date: str, rating: int = 3, **kwargs) -> Review:
@@ -107,23 +107,23 @@ MOCK_REVIEWS = [
 ]
 
 
-@patch("appinsight.trend.fetch_reviews", return_value=MOCK_REVIEWS)
-@patch("appinsight.trend.lookup_app", return_value=None)
+@patch("appinsight.commands.trend.fetch_reviews", return_value=MOCK_REVIEWS)
+@patch("appinsight.commands.trend.lookup_app", return_value=None)
 def test_trend_basic(mock_lookup, mock_fetch):
     result = trend("123456", pages=1)
     assert "RATING TREND" in result
     assert "★" in result
 
 
-@patch("appinsight.trend.fetch_reviews", return_value=MOCK_REVIEWS)
-@patch("appinsight.trend.lookup_app", return_value=None)
+@patch("appinsight.commands.trend.fetch_reviews", return_value=MOCK_REVIEWS)
+@patch("appinsight.commands.trend.lookup_app", return_value=None)
 def test_trend_month(mock_lookup, mock_fetch):
     result = trend("123456", pages=1, period="month")
     assert "2025-01" in result
 
 
-@patch("appinsight.trend.fetch_reviews", return_value=[])
-@patch("appinsight.trend.lookup_app", return_value=None)
+@patch("appinsight.commands.trend.fetch_reviews", return_value=[])
+@patch("appinsight.commands.trend.lookup_app", return_value=None)
 def test_trend_no_reviews(mock_lookup, mock_fetch):
     result = trend("123456", pages=1)
     assert "No reviews" in result

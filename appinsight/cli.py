@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""AppInsight CLI — Scrape and filter App Store reviews from the terminal.
+"""AppInsight CLI - Scrape and filter App Store reviews from the terminal.
 
 Usage:
     python3 cli.py search "WhatsApp"
@@ -12,13 +12,13 @@ import sys
 
 import requests
 
-from .scraper import search_app, lookup_app, fetch_reviews
-from .filters import apply_filters
-from .formatters import to_json, to_csv, to_markdown, to_text, summary_stats
-from .analyzer import analyze, check_ollama, list_models
-from .compare import compare_apps
-from .version_diff import version_diff
-from .trend import trend as trend_report
+from .scrapers.appstore import search_app, lookup_app, fetch_reviews
+from .output.filters import apply_filters
+from .output.formatters import to_json, to_csv, to_markdown, to_text, summary_stats
+from .commands.analyzer import analyze, check_ollama, list_models
+from .commands.compare import compare_apps
+from .commands.version_diff import version_diff
+from .commands.trend import trend as trend_report
 from .setup import cmd_setup, AGENTS
 
 STORES = ["apple", "google"]
@@ -28,7 +28,7 @@ def cmd_search(args):
     """Search the App Store or Google Play by name."""
     try:
         if args.store == "google":
-            from .google_play import search_play
+            from .scrapers.google_play import search_play
             apps = search_play(args.query, country=args.country, limit=args.limit)
         else:
             apps = search_app(args.query, country=args.country, limit=args.limit)
@@ -58,7 +58,7 @@ def cmd_reviews(args):
 
     try:
         if args.store == "google":
-            from .google_play import lookup_play, fetch_play_reviews
+            from .scrapers.google_play import lookup_play, fetch_play_reviews
             app = lookup_play(app_id, country=args.country)
             reviews = fetch_play_reviews(app_id, country=args.country, pages=args.pages)
         else:
@@ -139,7 +139,7 @@ def cmd_analyze(args):
     # Fetch
     try:
         if args.store == "google":
-            from .google_play import lookup_play, fetch_play_reviews
+            from .scrapers.google_play import lookup_play, fetch_play_reviews
             app = lookup_play(args.app_id, country=args.country)
             reviews = fetch_play_reviews(args.app_id, country=args.country, pages=args.pages)
         else:

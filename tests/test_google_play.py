@@ -1,12 +1,12 @@
-"""Tests for appinsight.google_play - Google Play review mapping logic."""
+"""Tests for appinsight.scrapers.google_play - Google Play review mapping logic."""
 
 from datetime import datetime, timezone
 from unittest.mock import patch, MagicMock
 
 import pytest
 
-from appinsight.google_play import search_play, lookup_play, fetch_play_reviews
-from appinsight.scraper import Review, AppInfo
+from appinsight.scrapers.google_play import search_play, lookup_play, fetch_play_reviews
+from appinsight.scrapers.appstore import Review, AppInfo
 
 
 # ---------------------------------------------------------------------------
@@ -86,7 +86,7 @@ def _gp_reviews_result():
 # ---------------------------------------------------------------------------
 
 class TestSearchPlay:
-    @patch("appinsight.google_play._get_gps")
+    @patch("appinsight.scrapers.google_play._get_gps")
     def test_returns_apps(self, mock_gps):
         gps = MagicMock()
         gps.search.return_value = _gp_search_results()
@@ -96,7 +96,7 @@ class TestSearchPlay:
         assert len(results) == 2  # Skips the None appId result
         assert all(isinstance(a, AppInfo) for a in results)
 
-    @patch("appinsight.google_play._get_gps")
+    @patch("appinsight.scrapers.google_play._get_gps")
     def test_skips_null_appid(self, mock_gps):
         gps = MagicMock()
         gps.search.return_value = _gp_search_results()
@@ -107,7 +107,7 @@ class TestSearchPlay:
         assert None not in app_ids
         assert "com.Slack" in app_ids
 
-    @patch("appinsight.google_play._get_gps")
+    @patch("appinsight.scrapers.google_play._get_gps")
     def test_maps_fields(self, mock_gps):
         gps = MagicMock()
         gps.search.return_value = [_gp_search_results()[1]]
@@ -125,7 +125,7 @@ class TestSearchPlay:
 # ---------------------------------------------------------------------------
 
 class TestLookupPlay:
-    @patch("appinsight.google_play._get_gps")
+    @patch("appinsight.scrapers.google_play._get_gps")
     def test_returns_app_info(self, mock_gps):
         gps = MagicMock()
         gps.app.return_value = _gp_app_info()
@@ -137,7 +137,7 @@ class TestLookupPlay:
         assert result.name == "Slack"
         assert result.rating_count == 182000
 
-    @patch("appinsight.google_play._get_gps")
+    @patch("appinsight.scrapers.google_play._get_gps")
     def test_returns_none_on_error(self, mock_gps):
         gps = MagicMock()
         gps.app.side_effect = Exception("Not found")
@@ -151,7 +151,7 @@ class TestLookupPlay:
 # ---------------------------------------------------------------------------
 
 class TestFetchPlayReviews:
-    @patch("appinsight.google_play._get_gps")
+    @patch("appinsight.scrapers.google_play._get_gps")
     def test_returns_reviews(self, mock_gps):
         gps = MagicMock()
         mock_sort = MagicMock()
@@ -159,9 +159,9 @@ class TestFetchPlayReviews:
         gps.reviews.return_value = (_gp_reviews_result(), "token123")
         mock_gps.return_value = gps
 
-        with patch("appinsight.google_play.Sort", mock_sort, create=True):
+        with patch("appinsight.scrapers.google_play.Sort", mock_sort, create=True):
             # Need to patch the google_play_scraper.Sort import
-            import appinsight.google_play as gp_module
+            import appinsight.scrapers.google_play as gp_module
             with patch.dict("sys.modules", {"google_play_scraper": gps}):
                 gps.Sort = mock_sort
                 reviews = fetch_play_reviews("com.Slack", pages=1)
@@ -169,7 +169,7 @@ class TestFetchPlayReviews:
         assert len(reviews) == 2  # 3 results but 1 is duplicate
         assert all(isinstance(r, Review) for r in reviews)
 
-    @patch("appinsight.google_play._get_gps")
+    @patch("appinsight.scrapers.google_play._get_gps")
     def test_deduplicates(self, mock_gps):
         gps = MagicMock()
         mock_sort = MagicMock()
@@ -184,7 +184,7 @@ class TestFetchPlayReviews:
         ids = [r.id for r in reviews]
         assert len(ids) == len(set(ids))
 
-    @patch("appinsight.google_play._get_gps")
+    @patch("appinsight.scrapers.google_play._get_gps")
     def test_maps_fields(self, mock_gps):
         gps = MagicMock()
         mock_sort = MagicMock()
@@ -205,7 +205,7 @@ class TestFetchPlayReviews:
         assert r.version == "26.02.20.0"
         assert r.title == ""  # Google Play has no title
 
-    @patch("appinsight.google_play._get_gps")
+    @patch("appinsight.scrapers.google_play._get_gps")
     def test_handles_datetime_with_timezone(self, mock_gps):
         gps = MagicMock()
         mock_sort = MagicMock()
@@ -219,7 +219,7 @@ class TestFetchPlayReviews:
 
         assert "2025-06-14" in reviews[0].date
 
-    @patch("appinsight.google_play._get_gps")
+    @patch("appinsight.scrapers.google_play._get_gps")
     def test_handles_datetime_without_timezone(self, mock_gps):
         gps = MagicMock()
         mock_sort = MagicMock()
@@ -234,7 +234,7 @@ class TestFetchPlayReviews:
         # Should still produce a valid date with UTC timezone added
         assert "2025-06-15" in reviews[0].date
 
-    @patch("appinsight.google_play._get_gps")
+    @patch("appinsight.scrapers.google_play._get_gps")
     def test_fetch_error_returns_empty(self, mock_gps):
         gps = MagicMock()
         mock_sort = MagicMock()

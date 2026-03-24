@@ -1,4 +1,4 @@
-"""Tests for appinsight.formatters — JSON, CSV, markdown, text, and stats output."""
+"""Tests for appinsight.formatters - JSON, CSV, markdown, text, and stats output."""
 
 import csv
 import io
@@ -6,8 +6,8 @@ import json
 
 import pytest
 
-from appinsight.scraper import Review
-from appinsight.formatters import to_json, to_csv, to_markdown, to_text, summary_stats
+from appinsight.scrapers.appstore import Review
+from appinsight.output.formatters import to_json, to_csv, to_markdown, to_text, summary_stats
 
 
 def _make_review(**overrides) -> Review:

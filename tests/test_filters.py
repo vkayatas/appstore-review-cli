@@ -1,11 +1,11 @@
-"""Tests for appinsight.filters — rating, keyword, date, version filters + sorting."""
+"""Tests for appinsight.filters - rating, keyword, date, version filters + sorting."""
 
 from datetime import datetime, timezone, timedelta
 
 import pytest
 
-from appinsight.scraper import Review
-from appinsight.filters import (
+from appinsight.scrapers.appstore import Review
+from appinsight.output.filters import (
     by_rating,
     by_keywords,
     by_days,

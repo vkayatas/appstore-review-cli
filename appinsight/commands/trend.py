@@ -9,8 +9,8 @@ from datetime import datetime, timezone
 
 import requests
 
-from .scraper import fetch_reviews, lookup_app, Review
-from .filters import apply_filters
+from appinsight.scrapers.appstore import fetch_reviews, lookup_app, Review
+from appinsight.output.filters import apply_filters
 
 
 def _parse_date(date_str: str) -> datetime | None:
@@ -71,7 +71,7 @@ def trend(
 ) -> str:
     """Fetch reviews and show rating trend over time."""
     if store == "google":
-        from .google_play import lookup_play, fetch_play_reviews
+        from appinsight.scrapers.google_play import lookup_play, fetch_play_reviews
         _lookup = lambda aid, **kw: lookup_play(aid, **kw)
         _fetch = lambda aid, **kw: fetch_play_reviews(aid, **kw)
     else:

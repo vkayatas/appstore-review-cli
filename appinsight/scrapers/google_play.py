@@ -7,7 +7,7 @@ import sys
 from datetime import timezone
 from typing import Optional
 
-from .scraper import Review, AppInfo
+from .appstore import Review, AppInfo
 
 
 def _get_gps():

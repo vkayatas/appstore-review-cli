@@ -7,10 +7,10 @@ from unittest.mock import patch
 
 import pytest
 
-from appinsight.scraper import Review, AppInfo
-from appinsight.compare import compare_apps, _compare_to_json, _compare_to_csv
-from appinsight.version_diff import version_diff, _vdiff_to_csv
-from appinsight.trend import trend, _trend_to_csv
+from appinsight.scrapers.appstore import Review, AppInfo
+from appinsight.commands.compare import compare_apps, _compare_to_json, _compare_to_csv
+from appinsight.commands.version_diff import version_diff, _vdiff_to_csv
+from appinsight.commands.trend import trend, _trend_to_csv
 
 
 def _make_review(date="2025-01-15T00:00:00+00:00", rating=2, version="1.0", **kw):
@@ -40,8 +40,8 @@ MOCK_REVIEWS = [
 # ==================== compare ====================
 
 class TestCompareExport:
-    @patch("appinsight.compare.fetch_reviews", return_value=MOCK_REVIEWS)
-    @patch("appinsight.compare.lookup_app", return_value=MOCK_APP)
+    @patch("appinsight.commands.compare.fetch_reviews", return_value=MOCK_REVIEWS)
+    @patch("appinsight.commands.compare.lookup_app", return_value=MOCK_APP)
     def test_compare_json_valid(self, mock_lookup, mock_fetch):
         result = compare_apps(["123", "456"], format="json")
         data = json.loads(result)
@@ -54,8 +54,8 @@ class TestCompareExport:
             assert "filtered_avg_rating" in app
             assert "rating_distribution" in app
 
-    @patch("appinsight.compare.fetch_reviews", return_value=MOCK_REVIEWS)
-    @patch("appinsight.compare.lookup_app", return_value=MOCK_APP)
+    @patch("appinsight.commands.compare.fetch_reviews", return_value=MOCK_REVIEWS)
+    @patch("appinsight.commands.compare.lookup_app", return_value=MOCK_APP)
     def test_compare_csv_valid(self, mock_lookup, mock_fetch):
         result = compare_apps(["123", "456"], format="csv")
         reader = csv.reader(io.StringIO(result))
@@ -65,14 +65,14 @@ class TestCompareExport:
         assert rows[1][0] == "123"
         assert rows[2][0] == "456"
 
-    @patch("appinsight.compare.fetch_reviews", return_value=MOCK_REVIEWS)
-    @patch("appinsight.compare.lookup_app", return_value=MOCK_APP)
+    @patch("appinsight.commands.compare.fetch_reviews", return_value=MOCK_REVIEWS)
+    @patch("appinsight.commands.compare.lookup_app", return_value=MOCK_APP)
     def test_compare_text_default(self, mock_lookup, mock_fetch):
         result = compare_apps(["123", "456"])
         assert "COMPARISON REPORT" in result
 
-    @patch("appinsight.compare.fetch_reviews", return_value=MOCK_REVIEWS)
-    @patch("appinsight.compare.lookup_app", return_value=MOCK_APP)
+    @patch("appinsight.commands.compare.fetch_reviews", return_value=MOCK_REVIEWS)
+    @patch("appinsight.commands.compare.lookup_app", return_value=MOCK_APP)
     def test_compare_json_rating_distribution(self, mock_lookup, mock_fetch):
         result = compare_apps(["123"], format="json")
         data = json.loads(result)
@@ -83,8 +83,8 @@ class TestCompareExport:
 # ==================== version-diff ====================
 
 class TestVersionDiffExport:
-    @patch("appinsight.version_diff.fetch_reviews", return_value=MOCK_REVIEWS)
-    @patch("appinsight.version_diff.lookup_app", return_value=MOCK_APP)
+    @patch("appinsight.commands.version_diff.fetch_reviews", return_value=MOCK_REVIEWS)
+    @patch("appinsight.commands.version_diff.lookup_app", return_value=MOCK_APP)
     def test_vdiff_json_valid(self, mock_lookup, mock_fetch):
         result = version_diff("123", format="json")
         data = json.loads(result)
@@ -97,22 +97,22 @@ class TestVersionDiffExport:
         assert "avg_rating" in data["old"]
         assert "rating_distribution" in data["new"]
 
-    @patch("appinsight.version_diff.fetch_reviews", return_value=MOCK_REVIEWS)
-    @patch("appinsight.version_diff.lookup_app", return_value=MOCK_APP)
+    @patch("appinsight.commands.version_diff.fetch_reviews", return_value=MOCK_REVIEWS)
+    @patch("appinsight.commands.version_diff.lookup_app", return_value=MOCK_APP)
     def test_vdiff_csv_valid(self, mock_lookup, mock_fetch):
         result = version_diff("123", format="csv")
         reader = csv.reader(io.StringIO(result))
         rows = list(reader)
         assert rows[0] == ["category", "old_pct", "new_pct", "change_pct"]
 
-    @patch("appinsight.version_diff.fetch_reviews", return_value=MOCK_REVIEWS)
-    @patch("appinsight.version_diff.lookup_app", return_value=MOCK_APP)
+    @patch("appinsight.commands.version_diff.fetch_reviews", return_value=MOCK_REVIEWS)
+    @patch("appinsight.commands.version_diff.lookup_app", return_value=MOCK_APP)
     def test_vdiff_text_default(self, mock_lookup, mock_fetch):
         result = version_diff("123")
         assert "VERSION DIFF" in result
 
-    @patch("appinsight.version_diff.fetch_reviews", return_value=MOCK_REVIEWS)
-    @patch("appinsight.version_diff.lookup_app", return_value=MOCK_APP)
+    @patch("appinsight.commands.version_diff.fetch_reviews", return_value=MOCK_REVIEWS)
+    @patch("appinsight.commands.version_diff.lookup_app", return_value=MOCK_APP)
     def test_vdiff_json_new_resolved_issues(self, mock_lookup, mock_fetch):
         result = version_diff("123", format="json")
         data = json.loads(result)
@@ -124,8 +124,8 @@ class TestVersionDiffExport:
 # ==================== trend ====================
 
 class TestTrendExport:
-    @patch("appinsight.trend.fetch_reviews", return_value=MOCK_REVIEWS)
-    @patch("appinsight.trend.lookup_app", return_value=MOCK_APP)
+    @patch("appinsight.commands.trend.fetch_reviews", return_value=MOCK_REVIEWS)
+    @patch("appinsight.commands.trend.lookup_app", return_value=MOCK_APP)
     def test_trend_json_valid(self, mock_lookup, mock_fetch):
         result = trend("123", format="json")
         data = json.loads(result)
@@ -140,8 +140,8 @@ class TestTrendExport:
         assert "count" in p
         assert "rating_distribution" in p
 
-    @patch("appinsight.trend.fetch_reviews", return_value=MOCK_REVIEWS)
-    @patch("appinsight.trend.lookup_app", return_value=MOCK_APP)
+    @patch("appinsight.commands.trend.fetch_reviews", return_value=MOCK_REVIEWS)
+    @patch("appinsight.commands.trend.lookup_app", return_value=MOCK_APP)
     def test_trend_csv_valid(self, mock_lookup, mock_fetch):
         result = trend("123", format="csv")
         reader = csv.reader(io.StringIO(result))
@@ -150,22 +150,22 @@ class TestTrendExport:
         assert "avg_rating" in rows[0]
         assert len(rows) >= 2  # header + at least 1 period
 
-    @patch("appinsight.trend.fetch_reviews", return_value=MOCK_REVIEWS)
-    @patch("appinsight.trend.lookup_app", return_value=MOCK_APP)
+    @patch("appinsight.commands.trend.fetch_reviews", return_value=MOCK_REVIEWS)
+    @patch("appinsight.commands.trend.lookup_app", return_value=MOCK_APP)
     def test_trend_text_default(self, mock_lookup, mock_fetch):
         result = trend("123")
         assert "RATING TREND" in result
 
-    @patch("appinsight.trend.fetch_reviews", return_value=MOCK_REVIEWS)
-    @patch("appinsight.trend.lookup_app", return_value=MOCK_APP)
+    @patch("appinsight.commands.trend.fetch_reviews", return_value=MOCK_REVIEWS)
+    @patch("appinsight.commands.trend.lookup_app", return_value=MOCK_APP)
     def test_trend_json_overall_trend(self, mock_lookup, mock_fetch):
         result = trend("123", format="json")
         data = json.loads(result)
         assert "overall_trend" in data
         assert "trend_delta" in data
 
-    @patch("appinsight.trend.fetch_reviews", return_value=MOCK_REVIEWS)
-    @patch("appinsight.trend.lookup_app", return_value=MOCK_APP)
+    @patch("appinsight.commands.trend.fetch_reviews", return_value=MOCK_REVIEWS)
+    @patch("appinsight.commands.trend.lookup_app", return_value=MOCK_APP)
     def test_trend_csv_star_columns(self, mock_lookup, mock_fetch):
         result = trend("123", format="csv")
         reader = csv.reader(io.StringIO(result))

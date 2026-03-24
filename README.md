@@ -16,6 +16,10 @@
 
 App store reviews are the largest public dataset of unfiltered user feedback. But reading them on the store websites is painful: no filtering, no export, no way to search across versions or countries. This tool fixes that.
 
+<p align="center">
+  <img src="docs/hero_img.png" alt="appstore-review-cli - Turn App Store reviews into AI-ready insights" width="600">
+</p>
+
 ## Why Use This?
 
 - **Two stores**: Apple App Store and Google Play - same filters, same output, one tool.

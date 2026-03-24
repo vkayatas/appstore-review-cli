@@ -1,10 +1,10 @@
-"""Output formatters — JSON, CSV, markdown table, and plain text."""
+"""Output formatters - JSON, CSV, markdown table, and plain text."""
 
 import csv
 import io
 import json
 
-from .scraper import Review
+from appinsight.scrapers.appstore import Review
 
 
 def to_json(reviews: list[Review], pretty: bool = True) -> str:
@@ -16,7 +16,7 @@ def to_json(reviews: list[Review], pretty: bool = True) -> str:
 
 
 def to_csv(reviews: list[Review]) -> str:
-    """Format reviews as CSV — ready for pandas.read_csv() or spreadsheet import."""
+    """Format reviews as CSV - ready for pandas.read_csv() or spreadsheet import."""
     if not reviews:
         return ""
 
@@ -55,7 +55,7 @@ def to_markdown(reviews: list[Review]) -> str:
 
 
 def to_text(reviews: list[Review]) -> str:
-    """Format reviews as plain text — one per block, easy for LLMs to read."""
+    """Format reviews as plain text - one per block, easy for LLMs to read."""
     if not reviews:
         return "No reviews match the given filters."
 

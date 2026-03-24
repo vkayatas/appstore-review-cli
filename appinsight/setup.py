@@ -1,4 +1,4 @@
-"""Setup command — install agent instruction files into the user's project."""
+"""Setup command - install agent instruction files into the user's project."""
 
 import os
 import sys
