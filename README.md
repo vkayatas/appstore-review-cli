@@ -2,6 +2,15 @@
 
 [![CI](https://github.com/vkayatas/appstore-review-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/vkayatas/appstore-review-cli/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/appstore-review-cli)](https://pypi.org/project/appstore-review-cli/)
+[![Python](https://img.shields.io/pypi/pyversions/appstore-review-cli)](https://pypi.org/project/appstore-review-cli/)
+[![Downloads](https://img.shields.io/pypi/dm/appstore-review-cli)](https://pypi.org/project/appstore-review-cli/)
+[![License: MIT](https://img.shields.io/pypi/l/appstore-review-cli)](https://github.com/vkayatas/appstore-review-cli/blob/main/LICENSE)
+[![Typed](https://img.shields.io/badge/typing-typed-blue)](https://peps.python.org/pep-0561/)
+
+[![Copilot](https://img.shields.io/badge/Copilot-ready-blue?logo=githubcopilot)](https://github.com/vkayatas/appstore-review-cli#agent-integration)
+[![Claude Code](https://img.shields.io/badge/Claude_Code-ready-orange?logo=anthropic)](https://github.com/vkayatas/appstore-review-cli#agent-integration)
+[![Cursor](https://img.shields.io/badge/Cursor-ready-purple)](https://github.com/vkayatas/appstore-review-cli#agent-integration)
+[![Windsurf](https://img.shields.io/badge/Windsurf-ready-teal)](https://github.com/vkayatas/appstore-review-cli#agent-integration)
 
 **Turn App Store and Google Play reviews into product intelligence - from the terminal or through your AI coding agent.**
 
@@ -253,12 +262,3 @@ cd appstore-review-cli
 uv sync
 uv run pytest
 ```
-
-## Roadmap
-
-- [x] Google Play Store support
-- [x] Multi-app comparison command
-- [x] Version diff (sentiment changes between releases)
-- [x] Rating trend over time (weekly/monthly)
-- [x] Export compare/version-diff/trend to JSON/CSV
-- [x] PyPI publish with GitHub Actions CI
