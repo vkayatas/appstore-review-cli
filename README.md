@@ -61,8 +61,8 @@ appstore-reviews reviews 803453959 --stars 2 --sort votes
 appstore-reviews reviews 803453959 --min-stars 3 --stars 3
 
 # Export to CSV or JSON
-appstore-reviews reviews 803453959 --stars 2 --format csv > reviews.csv
-appstore-reviews reviews 803453959 --stars 2 --format json > reviews.json
+appstore-reviews reviews 803453959 --stars 2 --format csv
+appstore-reviews reviews 803453959 --stars 2 --format json
 
 # Compare two apps side by side
 appstore-reviews compare 803453959 310633997 --stars 2 --pages 3
@@ -81,9 +81,9 @@ appstore-reviews trend 803453959 --pages 5
 appstore-reviews trend 803453959 --period month --stars 2
 
 # Export compare/version-diff/trend to JSON or CSV
-appstore-reviews compare 803453959 310633997 --format json > compare.json
-appstore-reviews version-diff 803453959 --format csv > diff.csv
-appstore-reviews trend 803453959 --format csv > trend.csv
+appstore-reviews compare 803453959 310633997 --format json
+appstore-reviews version-diff 803453959 --format csv
+appstore-reviews trend 803453959 --format csv
 ```
 
 ## Agent Integration
@@ -130,7 +130,7 @@ appstore-reviews reviews 803453959 --stars 2 --format text | your-llm "Summarize
 | Flag | Description |
 |------|-------------|
 | `--store google` | Use Google Play instead of Apple App Store (default: `apple`) |
-| `--country de` | Store region (default: `us`) |
+| `--country germany` | Store region - accepts codes (`de`) or names (`germany`) (default: `us`) |
 
 ### `search` - Find an app by name
 
@@ -138,7 +138,7 @@ appstore-reviews reviews 803453959 --stars 2 --format text | your-llm "Summarize
 |------|-------------|
 | `--limit 10` | Max results (default: 5) |
 | `--format json` | Output as JSON instead of table |
-| `--country de` | App Store region (default: `us`) |
+| `--country germany` | App Store region - accepts codes or country names (default: `us`) |
 
 For Google Play, app IDs are package names (e.g. `com.Slack`). For Apple, they're numeric (e.g. `803453959`).
 
@@ -155,7 +155,7 @@ For Google Play, app IDs are package names (e.g. `com.Slack`). For Apple, they'r
 | `--format text` | Output as `text` \| `json` \| `csv` \| `markdown` |
 | `--sort votes` | Sort by: `date` (newest) \| `rating` (lowest) \| `votes` (most helpful) |
 | `--stats` | Show rating distribution |
-| `--country de` | App Store region (default: `us`) |
+| `--country germany` | App Store region - accepts codes or country names (default: `us`) |
 
 All filters stack with AND logic.
 
@@ -179,7 +179,7 @@ Plus all the same filters as `reviews` (`--stars`, `--min-stars`, `--days`, `--k
 | `--keywords crash,bug` | Only reviews containing these words |
 | `--pages 5` | Pages to fetch per app (1-10, default 3) |
 | `--sort votes` | Sort by: `date` \| `rating` \| `votes` |
-| `--country de` | App Store region (default: `us`) |
+| `--country germany` | App Store region - accepts codes or country names (default: `us`) |
 | `--format json` | Output format: `text` (default) \| `json` \| `csv` |
 
 Outputs: overview table, per-app rating distribution, top complaint categories, top keywords, shared vs unique complaints.

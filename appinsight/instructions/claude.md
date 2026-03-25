@@ -42,7 +42,7 @@ appstore-reviews reviews <APP_ID> --stars 2 --sort votes --format text
 
 Export to CSV for data analysis:
 ```bash
-appstore-reviews reviews <APP_ID> --stars 2 --format csv > reviews.csv
+appstore-reviews reviews <APP_ID> --stars 2 --format csv
 ```
 
 Fetch reviews with keyword filter:
@@ -85,8 +85,8 @@ Shows: per-period average rating, review count, trend arrows (▲/▼), sparklin
 Export compare/version-diff/trend to JSON or CSV:
 ```bash
 appstore-reviews compare <APP_ID_1> <APP_ID_2> --format json
-appstore-reviews version-diff <APP_ID> --format csv > diff.csv
-appstore-reviews trend <APP_ID> --format csv > trend.csv
+appstore-reviews version-diff <APP_ID> --format csv
+appstore-reviews trend <APP_ID> --format csv
 ```
 
 All options: `appstore-reviews reviews --help`
@@ -100,10 +100,13 @@ All options: `appstore-reviews reviews --help`
 - **Rating range**: `--stars 2` means 1-2 stars. Use `--min-stars 3 --stars 3` for only 3-star reviews.
 - **Sorting**: `--sort date` (newest first, default), `--sort rating` (lowest first), `--sort votes` (most helpful first).
 - **No results?**: "No reviews match the given filters" means filters are too narrow. Try fewer keywords, more days, or higher star ceiling.
+- **No reviews at all**: If an app has zero reviews in the store, the CLI will say so clearly and suggest trying a different country. Small or new apps often have no reviews.
 - **Network errors**: If the App Store is unreachable, the CLI prints a clear error to stderr instead of a traceback.
-- **Country codes**: Default is `us`. Common alternatives: `gb`, `de`, `fr`, `jp`, `au`, `ca`, `nl`, `br`, `kr`.
+- **Country codes**: Default is `us`. Accepts 2-letter ISO codes (`de`, `gb`, `fr`) or full country names (`germany`, `united kingdom`, `japan`). Common aliases also work: `uk`, `usa`, `holland`. Example: `--country germany`.
 - **Google Play**: Use `--store google` with package names (e.g. `com.Slack`). Requires `pip install appstore-review-cli[google]`.
 - **Google Play search**: The first result sometimes lacks a package name. Use the package name directly if needed (find it in the Google Play URL).
+
+**NEVER redirect CLI output to files** (no `> file.txt`, `> reviews.csv`, etc.). Always read the output directly from stdout. Do not create files with review data unless the user explicitly asks for a file export.
 
 ## How to Analyze (You Do This Yourself)
 
@@ -141,7 +144,7 @@ The compare command produces a structured report with per-app breakdowns, shared
 **User asks: "What do German users think of Duolingo?"**
 ```bash
 appstore-reviews search "Duolingo"
-appstore-reviews reviews <APP_ID> --stars 2 --country de --days 90 --format text
+appstore-reviews reviews <APP_ID> --stars 2 --country germany --days 90 --format text
 ```
 Analyze with awareness that reviews may be in German.
 

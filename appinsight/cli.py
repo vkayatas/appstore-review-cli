@@ -23,6 +23,99 @@ from .setup import cmd_setup, AGENTS
 
 STORES = ["apple", "google"]
 
+# Map common country names/aliases to ISO 2-letter codes for user convenience
+COUNTRY_ALIASES = {
+    # Full names
+    "united states": "us", "usa": "us", "america": "us",
+    "united kingdom": "gb", "uk": "gb", "england": "gb", "britain": "gb",
+    "germany": "de", "deutschland": "de",
+    "france": "fr", "french": "fr",
+    "japan": "jp", "japanese": "jp",
+    "australia": "au",
+    "canada": "ca",
+    "netherlands": "nl", "holland": "nl", "dutch": "nl",
+    "brazil": "br", "brasil": "br",
+    "south korea": "kr", "korea": "kr",
+    "china": "cn",
+    "india": "in",
+    "italy": "it", "italian": "it",
+    "spain": "es", "spanish": "es",
+    "mexico": "mx",
+    "russia": "ru", "russian": "ru",
+    "turkey": "tr", "turkish": "tr",
+    "sweden": "se", "swedish": "se",
+    "norway": "no", "norwegian": "no",
+    "denmark": "dk", "danish": "dk",
+    "finland": "fi", "finnish": "fi",
+    "poland": "pl", "polish": "pl",
+    "switzerland": "ch", "swiss": "ch",
+    "austria": "at",
+    "belgium": "be",
+    "portugal": "pt", "portuguese": "pt",
+    "ireland": "ie",
+    "new zealand": "nz",
+    "singapore": "sg",
+    "hong kong": "hk",
+    "taiwan": "tw",
+    "thailand": "th", "thai": "th",
+    "indonesia": "id",
+    "malaysia": "my",
+    "philippines": "ph",
+    "vietnam": "vn",
+    "saudi arabia": "sa",
+    "united arab emirates": "ae", "uae": "ae",
+    "israel": "il",
+    "south africa": "za",
+    "argentina": "ar",
+    "colombia": "co",
+    "chile": "cl",
+    "peru": "pe",
+    "czech republic": "cz", "czechia": "cz",
+    "romania": "ro",
+    "hungary": "hu",
+    "greece": "gr",
+    "ukraine": "ua",
+    "egypt": "eg",
+}
+
+# Valid ISO country codes for App Store (not exhaustive, but covers major stores)
+VALID_COUNTRY_CODES = {
+    "us", "gb", "de", "fr", "jp", "au", "ca", "nl", "br", "kr", "cn", "in",
+    "it", "es", "mx", "ru", "tr", "se", "no", "dk", "fi", "pl", "ch", "at",
+    "be", "pt", "ie", "nz", "sg", "hk", "tw", "th", "id", "my", "ph", "vn",
+    "sa", "ae", "il", "za", "ar", "co", "cl", "pe", "cz", "ro", "hu", "gr",
+    "ua", "eg",
+}
+
+
+def resolve_country(value: str) -> str:
+    """Resolve a country name or alias to a 2-letter ISO code.
+
+    Accepts: ISO codes (us, de, gb), full names (germany, united states),
+    and common aliases (uk, usa, holland).
+    """
+    lowered = value.lower().strip()
+
+    # Try alias lookup first (handles uk->gb, usa->us, etc.)
+    if lowered in COUNTRY_ALIASES:
+        return COUNTRY_ALIASES[lowered]
+
+    # Already a valid 2-letter code
+    if len(lowered) == 2 and lowered.isalpha():
+        return lowered
+
+    # Fuzzy: check if input is a prefix of any known alias
+    matches = [code for name, code in COUNTRY_ALIASES.items() if name.startswith(lowered)]
+    if len(matches) == 1:
+        return matches[0]
+
+    # Not found - show helpful suggestions
+    common_examples = "us, gb/uk, de/germany, fr/france, jp/japan, au, ca, nl, br, kr"
+    print(f"Warning: Unknown country '{value}'. Using as-is.", file=sys.stderr)
+    print(f"  Common values: {common_examples}", file=sys.stderr)
+    print(f"  Use 2-letter ISO codes or country names (e.g. --country germany).", file=sys.stderr)
+    return lowered
+
 
 def cmd_search(args):
     """Search the App Store or Google Play by name."""
@@ -82,6 +175,12 @@ def cmd_reviews(args):
     else:
         print(f"Fetching reviews for app ID: {app_id}", file=sys.stderr)
     print(f"Fetched {len(reviews)} reviews", file=sys.stderr)
+
+    if not reviews:
+        print("No reviews found for this app. The app may be too new, too small, "
+              "or not available in this country's store. "
+              "Try a different --country (e.g. --country us).", file=sys.stderr)
+        sys.exit(0)
 
     # Apply filters
     keywords = args.keywords.split(",") if args.keywords else None
@@ -163,6 +262,12 @@ def cmd_analyze(args):
     else:
         print(f"Fetching reviews for app ID: {app_id}", file=sys.stderr)
     print(f"Fetched {len(reviews)} reviews", file=sys.stderr)
+
+    if not reviews:
+        print("No reviews found for this app. The app may be too new, too small, "
+              "or not available in this country's store. "
+              "Try a different --country (e.g. --country us).", file=sys.stderr)
+        sys.exit(0)
 
     # Apply filters
     keywords = args.keywords.split(",") if args.keywords else None
@@ -293,7 +398,9 @@ def main():
         prog="appstore-reviews",
         description="Scrape and filter App Store & Google Play reviews. Built for coding agents.",
     )
-    parser.add_argument("--country", default="us", help="ISO country code (default: us)")
+    parser.add_argument("--country", default="us",
+                        help="Country code or name (default: us). "
+                             "Examples: us, gb, de, germany, japan, uk")
     parser.add_argument("--store", choices=STORES, default="apple",
                         help="App store: apple (default) or google")
 
@@ -402,6 +509,9 @@ def main():
                          help="Output format: text (default), json, csv")
 
     args = parser.parse_args()
+
+    # Resolve country names/aliases to ISO codes
+    args.country = resolve_country(args.country)
 
     if args.command == "search":
         cmd_search(args)

@@ -39,9 +39,14 @@ python -m appinsight reviews <APP_ID> --stars 2
 - **Rating range**: `--stars 2` means 1-2 stars. `--min-stars 3 --stars 4` means 3-4 stars. `--min-stars 3 --stars 3` means only 3-star reviews.
 - **Sorting**: Default is newest first. Use `--sort votes` to surface the most impactful reviews, `--sort rating` for lowest-rated first.
 - **"No reviews match"**: If filters return zero results, the output will say "No reviews match the given filters." This is normal - try relaxing filters (fewer keywords, more days, higher star rating).
+- **No reviews at all**: If an app has zero reviews in the store, the CLI will say so clearly and suggest trying a different country. Small or new apps often have no reviews.
 - **Network errors**: If Apple's API is unreachable, the CLI prints a friendly error to stderr instead of a traceback.
 - **Google Play**: Use `--store google` with package names (e.g. `com.Slack`). Requires `pip install appstore-review-cli[google]`.
 - **Google Play search**: The first search result sometimes lacks a package name (library limitation). Use the package name directly if needed (find it in the Google Play URL).
+
+## Output Rules
+
+**NEVER redirect CLI output to files** (no `> file.txt`, `> reviews.csv`, etc.). Always read the output directly from stdout. The CLI is designed to print results to the terminal for you to analyze inline. Do not create `.txt`, `.csv`, `.json`, or any other files with review data unless the user explicitly asks for a file export.
 
 ## Available Commands
 
@@ -55,7 +60,7 @@ Returns app IDs, names, ratings. Use this first to find the numeric app ID.
 - `--limit 10` - Max results to return (default: 5)
 - `--format json` - Output as JSON instead of table (useful for structured processing)
 
-`--country` also works with search (e.g., `--country de` to search the German App Store).
+`--country` also works with search (e.g., `--country germany` to search the German App Store).
 
 ### 2. Fetch and filter reviews
 ```bash
@@ -72,7 +77,7 @@ appstore-reviews reviews <APP_ID> [options]
 - `--format json|text|csv|markdown` - Output format (default: text). Use `csv` for pandas/spreadsheet analysis.
 - `--sort date|rating|votes` - Sort order: `date` (newest first, default), `rating` (lowest first), `votes` (most helpful first)
 - `--stats` - Show rating distribution (printed to stderr, won't pollute data output)
-- `--country us` - App Store region. Common codes: `us`, `gb`, `de`, `fr`, `jp`, `au`, `ca`, `nl`, `br`, `kr`
+- `--country us` - App Store region. Accepts codes (`us`, `gb`, `de`) or names (`germany`, `japan`, `united kingdom`)
 
 ## Analysis Modes
 
@@ -149,7 +154,7 @@ The compare command produces a structured report with per-app breakdowns, shared
 
 **"Check reviews for a specific country"**
 ```bash
-appstore-reviews reviews 803453959 --stars 2 --country de --format text
+appstore-reviews reviews 803453959 --stars 2 --country germany --format text
 ```
 
 **"Find complaints about Spotify on Android"**
@@ -184,5 +189,5 @@ df[df["content"].str.contains("crash", case=False)]
 
 Or export CSV from the CLI:
 ```bash
-appstore-reviews reviews 618783545 --stars 2 --format csv > reviews.csv
+appstore-reviews reviews 618783545 --stars 2 --format csv
 ```
