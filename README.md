@@ -42,6 +42,14 @@ For Google Play support:
 pip install "appstore-review-cli[google]"
 ```
 
+Install as an agent skill:
+```bash
+appstore-reviews setup copilot   # GitHub Copilot skill
+appstore-reviews setup claude    # Claude Code skill
+```
+
+Installs a `SKILL.md` that the agent auto-discovers when relevant. See [Agent Integration](#agent-integration) for Cursor, Windsurf, and global install options.
+
 ## Quick Start
 
 ```bash
@@ -91,10 +99,15 @@ appstore-reviews trend 803453959 --format csv
 One command to teach your AI coding agent every command, filter, and workflow:
 
 ```bash
-appstore-reviews setup copilot      # GitHub Copilot → creates SKILL.md
-appstore-reviews setup claude       # Claude Code    → creates CLAUDE.md
-appstore-reviews setup cursor       # Cursor         → creates .cursor/rules/appstore-reviews.md
-appstore-reviews setup windsurf     # Windsurf       → creates .windsurfrules
+# Project-level (per-repo)
+appstore-reviews setup copilot    # .github/skills/appstore-reviews/SKILL.md
+appstore-reviews setup claude     # .claude/skills/appstore-reviews/SKILL.md
+appstore-reviews setup cursor     # .cursor/rules/appstore-reviews.md
+appstore-reviews setup windsurf   # .windsurfrules
+
+# Personal (shared across all projects)
+appstore-reviews setup copilot --global   # ~/.copilot/skills/appstore-reviews/SKILL.md
+appstore-reviews setup claude --global    # ~/.claude/skills/appstore-reviews/SKILL.md
 ```
 
 Then just ask in natural language:
@@ -107,6 +120,16 @@ Then just ask in natural language:
 The agent runs the CLI, fetches reviews, and analyzes them directly. No Ollama, no extra setup.
 
 Use `--force` to overwrite an existing file, `--append` to add to one.
+
+### How it works per agent
+
+**GitHub Copilot** and **Claude Code** support **agent skills** - a directory-based system where each skill has a `SKILL.md` file with YAML frontmatter (`name` and `description`). The agent reads the description and only loads the skill into context when it's relevant to the current task. Both support project-level and personal (global) skill directories.
+
+**Cursor** and **Windsurf** do not have a skills system yet. Instead:
+- **Cursor** uses **rules** (`.cursor/rules/`) that are loaded based on glob patterns or always active. We install a single rules file there.
+- **Windsurf** uses a **single flat rules file** (`.windsurfrules`) in the project root, loaded on every interaction.
+
+For Cursor and Windsurf, `--global` is not supported since they have no personal/global rules directory.
 
 ### Without an agent
 
@@ -213,14 +236,15 @@ Outputs: version comparison table, rating distributions, complaint category chan
 
 Outputs: per-period table with average rating, review count, trend arrows (▲/▼), ASCII sparkline bars, mini star distributions, and overall trend summary.
 
-### `setup <agent>` - Install agent instructions
+### `setup <agent>` - Install agent skill / instructions
 
 | Argument / Flag | Description |
 |-----------------|-------------|
-| `copilot` | Creates `SKILL.md` for GitHub Copilot |
-| `claude` | Creates `CLAUDE.md` for Claude Code |
-| `cursor` | Creates `.cursor/rules/appstore-reviews.md` |
-| `windsurf` | Creates `.windsurfrules` |
+| `copilot` | `.github/skills/appstore-reviews/SKILL.md` (Copilot agent skill) |
+| `claude` | `.claude/skills/appstore-reviews/SKILL.md` (Claude agent skill) |
+| `cursor` | `.cursor/rules/appstore-reviews.md` (Cursor rules file) |
+| `windsurf` | `.windsurfrules` (Windsurf rules file) |
+| `--global` | Install as a personal skill to `~/.copilot/skills/` or `~/.claude/skills/` (copilot/claude only) |
 | `--force` | Overwrite existing file |
 | `--append` | Append to existing file |
 

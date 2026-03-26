@@ -5,18 +5,28 @@ import sys
 from importlib import resources
 
 
-# Map agent names to (source file in package, target path relative to cwd)
+# Map agent names to (source file in package, target path relative to cwd or home)
 AGENTS = {
     "copilot": {
         "source": "copilot.md",
         "targets": [
-            ("SKILL.md", "Project root (auto-discovered by Copilot as a workspace skill)"),
+            (os.path.join(".github", "skills", "appstore-reviews", "SKILL.md"),
+             ".github/skills/appstore-reviews/ (auto-discovered by Copilot)"),
+        ],
+        "global_targets": [
+            (os.path.join(".copilot", "skills", "appstore-reviews", "SKILL.md"),
+             "~/.copilot/skills/appstore-reviews/ (available across all projects)"),
         ],
     },
     "claude": {
         "source": "claude.md",
         "targets": [
-            ("CLAUDE.md", "Project root (auto-read by Claude Code on every session)"),
+            (os.path.join(".claude", "skills", "appstore-reviews", "SKILL.md"),
+             ".claude/skills/appstore-reviews/ (auto-discovered by Claude)"),
+        ],
+        "global_targets": [
+            (os.path.join(".claude", "skills", "appstore-reviews", "SKILL.md"),
+             "~/.claude/skills/appstore-reviews/ (available across all projects)"),
         ],
     },
     "cursor": {
@@ -41,7 +51,7 @@ def _read_instruction(filename: str) -> str:
 
 
 def cmd_setup(args):
-    """Install agent instruction files into the current project."""
+    """Install agent instruction files into the current project or globally."""
     agent = args.agent
 
     if agent not in AGENTS:
@@ -52,13 +62,26 @@ def cmd_setup(args):
     config = AGENTS[agent]
     content = _read_instruction(config["source"])
 
-    for target_path, description in config["targets"]:
-        full_path = os.path.join(os.getcwd(), target_path)
+    # Choose project or global targets
+    use_global = getattr(args, "global", False)
+    if use_global:
+        if "global_targets" not in config:
+            print(f"Error: --global is not supported for {agent}.", file=sys.stderr)
+            sys.exit(1)
+        targets = config["global_targets"]
+        base_dir = os.path.expanduser("~")
+    else:
+        targets = config["targets"]
+        base_dir = os.getcwd()
+
+    for target_path, description in targets:
+        full_path = os.path.join(base_dir, target_path)
 
         # Check if file already exists
         if os.path.exists(full_path):
             if not args.force:
-                print(f"Already exists: {target_path}", file=sys.stderr)
+                display = os.path.join("~", target_path) if use_global else target_path
+                print(f"Already exists: {display}", file=sys.stderr)
                 print(f"  Use --force to overwrite, or --append to add to existing file.", file=sys.stderr)
                 sys.exit(1)
 
@@ -67,16 +90,18 @@ def cmd_setup(args):
         if parent:
             os.makedirs(parent, exist_ok=True)
 
+        display = os.path.join("~", target_path) if use_global else target_path
         if args.append and os.path.exists(full_path):
             with open(full_path, "a", encoding="utf-8") as f:
                 f.write("\n\n")
                 f.write(content)
-            print(f"Appended to: {target_path}", file=sys.stderr)
+            print(f"Appended to: {display}", file=sys.stderr)
         else:
             with open(full_path, "w", encoding="utf-8") as f:
                 f.write(content)
-            print(f"Created: {target_path}", file=sys.stderr)
+            print(f"Created: {display}", file=sys.stderr)
 
-        print(f"  → {description}", file=sys.stderr)
+        print(f"  -> {description}", file=sys.stderr)
 
-    print(f"\nDone! Your {agent} agent now knows about appstore-reviews.", file=sys.stderr)
+    scope = "globally" if use_global else "in this project"
+    print(f"\nDone! Your {agent} agent now knows about appstore-reviews ({scope}).", file=sys.stderr)

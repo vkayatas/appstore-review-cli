@@ -451,11 +451,13 @@ def main():
     p_analyze.add_argument("--list-models", action="store_true", help="List available Ollama models and exit")
 
     # --- setup ---
-    p_setup = sub.add_parser("setup", help="Install agent instruction files into your project")
+    p_setup = sub.add_parser("setup", help="Install agent skill files into your project")
     p_setup.add_argument("agent", choices=list(AGENTS.keys()),
                          help="Agent to set up: copilot, claude, cursor, windsurf")
     p_setup.add_argument("--force", action="store_true", help="Overwrite existing files")
     p_setup.add_argument("--append", action="store_true", help="Append to existing files instead of overwriting")
+    p_setup.add_argument("--global", action="store_true", dest="global",
+                         help="Install as a personal skill (~/.copilot/skills/ or ~/.claude/skills/) instead of project-level")
 
     # --- compare ---
     p_compare = sub.add_parser("compare", help="Compare reviews across multiple apps")
