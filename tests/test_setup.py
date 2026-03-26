@@ -7,7 +7,7 @@ import stat
 
 import pytest
 
-from appinsight.setup import AGENTS, SCRIPTS, cmd_setup, _read_instruction, _read_script
+from appinsight.setup import AGENTS, SCRIPTS, cmd_setup, _read_instruction, _read_script, _strip_frontmatter
 
 
 # ---------------------------------------------------------------------------
@@ -70,8 +70,12 @@ class TestAppend:
         cmd_setup(_make_args("copilot", append=True))
         appended = skill.read_text()
         assert len(appended) > len(original)
-        # Should contain the content twice (original + appended copy)
-        assert appended.count("appstore-reviews") > original.count("appstore-reviews")
+        # Appended content should be present
+        assert appended.count("## Step 1") == 2
+        # Must have exactly one YAML frontmatter block (two --- delimiters)
+        lines = appended.split("\n")
+        fence_count = sum(1 for line in lines if line.strip() == "---")
+        assert fence_count == 2, f"Expected 2 frontmatter fences, got {fence_count}"
 
     def test_append_on_nonexistent_file_creates_it(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
@@ -223,3 +227,23 @@ class TestBundledScriptContent:
         content = _read_script("run.sh")
         assert "#!/bin/bash" in content
         assert "appstore-reviews" in content
+
+
+# ---------------------------------------------------------------------------
+# _strip_frontmatter helper
+# ---------------------------------------------------------------------------
+
+class TestStripFrontmatter:
+    def test_strips_yaml_frontmatter(self):
+        text = "---\nname: test\n---\n# Body\nContent here"
+        result = _strip_frontmatter(text)
+        assert "---" not in result
+        assert result.startswith("# Body")
+
+    def test_no_frontmatter_unchanged(self):
+        text = "# Just a heading\nSome content"
+        assert _strip_frontmatter(text) == text
+
+    def test_incomplete_frontmatter_unchanged(self):
+        text = "---\nname: test\nno closing fence"
+        assert _strip_frontmatter(text) == text

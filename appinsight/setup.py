@@ -64,6 +64,18 @@ def _read_script(filename: str) -> str:
     return ref.read_text(encoding="utf-8")
 
 
+def _strip_frontmatter(text: str) -> str:
+    """Remove YAML frontmatter (---...---) from the start of a document."""
+    if not text.startswith("---"):
+        return text
+    end = text.find("---", 3)
+    if end == -1:
+        return text
+    # Skip past the closing --- and any trailing newline
+    end = text.index("\n", end) + 1 if "\n" in text[end:] else end + 3
+    return text[end:].lstrip("\n")
+
+
 def cmd_setup(args):
     """Install agent instruction files into the current project or globally."""
     agent = args.agent
@@ -106,9 +118,11 @@ def cmd_setup(args):
 
         display = os.path.join("~", target_path) if use_global else target_path
         if args.append and os.path.exists(full_path):
+            # Strip YAML frontmatter to avoid a second frontmatter block
+            append_content = _strip_frontmatter(content)
             with open(full_path, "a", encoding="utf-8") as f:
                 f.write("\n\n")
-                f.write(content)
+                f.write(append_content)
             print(f"Appended to: {display}", file=sys.stderr)
         else:
             with open(full_path, "w", encoding="utf-8") as f:
