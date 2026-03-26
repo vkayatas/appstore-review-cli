@@ -43,24 +43,14 @@ fi
 **Read the output:**
 - `OK: appstore-reviews` - Use `appstore-reviews` as the command for all subsequent calls.
 - `OK: python3 -m appinsight` - Use `python3 -m appinsight` as the command for all subsequent calls.
-- `NOT INSTALLED` - Stop and tell the user:
-  > `appstore-review-cli` is not installed in your current Python environment. Install it with:
-  > ```bash
-  > pip install appstore-review-cli
-  > ```
-  > Or create an isolated environment first:
-  > ```bash
-  > python3 -m venv .venv && source .venv/bin/activate && pip install appstore-review-cli
-  > ```
-
-  Do NOT run `pip install` yourself without asking the user first.
+- `NOT INSTALLED` - **Stop immediately.** Do not attempt to install anything. Tell the user: "appstore-review-cli is not installed in your current Python environment. Please install it and try again." Then wait for the user to confirm it is installed before proceeding.
 
 **Important**: Use the working command from the bootstrap for ALL subsequent calls in the session. Do not re-check or switch commands mid-session.
 
 ## Common Mistakes (NEVER do these)
 
 - **NEVER use `python`** - always use `python3`. Many systems do not have `python` in PATH.
-- **NEVER run `pip install` without asking the user** - they may want a specific environment. This includes extras like `[google]` or `[pandas]` - do not install them proactively.
+- **NEVER run `pip install`** - do not install, upgrade, or modify any packages. If something is missing, tell the user and stop.
 - **NEVER run `pip list | grep` to check installation** - the bootstrap script above already handles detection.
 - **NEVER run the bootstrap steps as separate commands** - run the single script above, read the output, done.
 - **NEVER try `appstore-reviews`, then `python -m appinsight`, then `python3 -m appinsight` as separate commands** - the bootstrap handles all of this in one call.
@@ -156,7 +146,7 @@ All options: `appstore-reviews reviews --help`
 - **No reviews at all**: If an app has zero reviews in the store, the CLI will say so clearly and suggest trying a different country. Small or new apps often have no reviews.
 - **Network errors**: If the App Store is unreachable, the CLI prints a clear error to stderr instead of a traceback.
 - **Country codes**: Default is `us`. Accepts 2-letter ISO codes (`de`, `gb`, `fr`) or full country names (`germany`, `united kingdom`, `japan`). Common aliases also work: `uk`, `usa`, `holland`. Example: `--country germany`.
-- **Google Play**: Use `--store google` with package names (e.g. `com.Slack`). If you get an import error about `google_play_scraper`, tell the user to install the google extra: `pip install "appstore-review-cli[google]"`.
+- **Google Play**: Use `--store google` with package names (e.g. `com.Slack`). If you get an import error about `google_play_scraper`, tell the user the google extra is not installed and they need to install it themselves.
 - **Google Play search**: The first result sometimes lacks a package name. Use the package name directly if needed (find it in the Google Play URL).
 
 **NEVER redirect CLI output to files** (no `> file.txt`, `> reviews.csv`, etc.). Always read the output directly from stdout. Do not create files with review data unless the user explicitly asks for a file export.
@@ -237,4 +227,4 @@ reviews = get_reviews("com.Slack", stars=2, days=30, store="google")
 df = get_reviews_df(618783545, stars=2, pages=5)
 df.groupby("version")["rating"].mean()
 ```
-The pandas extra must be installed separately if needed: `pip install appstore-review-cli[pandas]`
+The pandas extra must be installed separately by the user if needed.
