@@ -11,7 +11,7 @@ compatibility: "Requires Python 3.8+ with appstore-review-cli pre-installed by t
 
 **The `appstore-reviews` CLI is already installed in this project. Do not run pip, do not search PyPI, do not install or upgrade any packages.** This tool's package name is `appstore-review-cli`. It is not `app-store-scraper` or any other package you might find online. Searching PyPI for alternatives will fail or find the wrong thing.
 
-You are the analyzer. Fetch reviews with the CLI, then analyze them yourself. Do not suggest Ollama, external LLMs, or the `analyze` command.
+You are the analyzer. Fetch reviews with the CLI, then analyze them yourself. Do not suggest Ollama, external LLMs, or the `analyze` command (it requires a local Ollama install and is redundant when you are the LLM).
 
 ## Step 1: Activate and verify (run once per session)
 
