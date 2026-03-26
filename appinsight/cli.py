@@ -394,6 +394,19 @@ def cmd_trend(args):
 
 
 def main():
+    # Shared arguments that should work both before and after the subcommand.
+    # argparse parents= copies these into each subparser so
+    # `appstore-reviews --country us reviews ...` and
+    # `appstore-reviews reviews ... --country us` both work.
+    # Using SUPPRESS as default so the subparser doesn't overwrite
+    # the parent parser's value when the flag isn't repeated.
+    shared = argparse.ArgumentParser(add_help=False)
+    shared.add_argument("--country", default=argparse.SUPPRESS,
+                        help="Country code or name (default: us). "
+                             "Examples: us, gb, de, germany, japan, uk")
+    shared.add_argument("--store", choices=STORES, default=argparse.SUPPRESS,
+                        help="App store: apple (default) or google")
+
     parser = argparse.ArgumentParser(
         prog="appstore-reviews",
         description="Scrape and filter App Store & Google Play reviews. Built for coding agents.",
@@ -407,13 +420,13 @@ def main():
     sub = parser.add_subparsers(dest="command", required=True)
 
     # --- search ---
-    p_search = sub.add_parser("search", help="Search for an app by name")
+    p_search = sub.add_parser("search", help="Search for an app by name", parents=[shared])
     p_search.add_argument("query", help="App name to search for")
     p_search.add_argument("--limit", type=int, default=5, help="Max results (default: 5)")
     p_search.add_argument("--format", choices=["table", "json"], default="table")
 
     # --- reviews ---
-    p_reviews = sub.add_parser("reviews", help="Fetch and filter reviews")
+    p_reviews = sub.add_parser("reviews", help="Fetch and filter reviews", parents=[shared])
     p_reviews.add_argument("app_id", help="Numeric App Store ID or Google Play package name")
     p_reviews.add_argument("--stars", type=int, default=None, choices=range(1, 6),
                            help="Max star rating to include (e.g. 2 = 1-2 stars)", metavar="STARS")
@@ -430,7 +443,7 @@ def main():
     p_reviews.add_argument("--stats", action="store_true", help="Show rating distribution stats")
 
     # --- analyze ---
-    p_analyze = sub.add_parser("analyze", help="Fetch reviews and analyze with a local LLM (Ollama)")
+    p_analyze = sub.add_parser("analyze", help="Fetch reviews and analyze with a local LLM (Ollama)", parents=[shared])
     p_analyze.add_argument("app_id", nargs="?", default=None,
                            help="Numeric App Store ID or Google Play package name")
     p_analyze.add_argument("--mode", choices=["summary", "gaps", "bugs"], default="summary",
@@ -451,7 +464,7 @@ def main():
     p_analyze.add_argument("--list-models", action="store_true", help="List available Ollama models and exit")
 
     # --- setup ---
-    p_setup = sub.add_parser("setup", help="Install agent skill files into your project")
+    p_setup = sub.add_parser("setup", help="Install agent skill files into your project", parents=[shared])
     p_setup.add_argument("agent", choices=list(AGENTS.keys()),
                          help="Agent to set up: copilot, claude, cursor, windsurf")
     p_setup.add_argument("--force", action="store_true", help="Overwrite existing files")
@@ -460,7 +473,7 @@ def main():
                          help="Install as a personal skill (~/.copilot/skills/ or ~/.claude/skills/) instead of project-level")
 
     # --- compare ---
-    p_compare = sub.add_parser("compare", help="Compare reviews across multiple apps")
+    p_compare = sub.add_parser("compare", help="Compare reviews across multiple apps", parents=[shared])
     p_compare.add_argument("app_ids", nargs="+",
                            help="Two or more app IDs (numeric for Apple, package name for Google)")
     p_compare.add_argument("--stars", type=int, default=None, choices=range(1, 6),
@@ -477,7 +490,7 @@ def main():
                            help="Output format: text (default), json, csv")
 
     # --- version-diff ---
-    p_vdiff = sub.add_parser("version-diff", help="Compare sentiment between app versions")
+    p_vdiff = sub.add_parser("version-diff", help="Compare sentiment between app versions", parents=[shared])
     p_vdiff.add_argument("app_id",
                          help="Numeric App Store ID or Google Play package name")
     p_vdiff.add_argument("--old", default=None, help="Old version to compare (auto-detected if omitted)")
@@ -494,7 +507,7 @@ def main():
                          help="Output format: text (default), json, csv")
 
     # --- trend ---
-    p_trend = sub.add_parser("trend", help="Show rating trend over time")
+    p_trend = sub.add_parser("trend", help="Show rating trend over time", parents=[shared])
     p_trend.add_argument("app_id",
                          help="Numeric App Store ID or Google Play package name")
     p_trend.add_argument("--period", choices=["week", "month"], default="week",

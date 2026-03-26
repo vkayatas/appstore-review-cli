@@ -7,11 +7,58 @@ The user has `appstore-review-cli` installed - a CLI tool for scraping Apple App
 
 **You ARE the analyzer.** Fetch reviews with the CLI, then reason over them directly. Do NOT suggest the user install Ollama or use the `analyze` command - you can do the analysis yourself.
 
-**Always use the `appstore-reviews` CLI command in the terminal. Do NOT use the Python API or import statements - use the bash commands shown below.** If the command is not found, install it first:
+**Always use the `appstore-reviews` CLI command in the terminal. Do NOT use the Python API or import statements - use the bash commands shown below.**
+
+## CLI Bootstrap (run this FIRST - ONE command)
+
+Before running any review commands, run this **single** preflight script. It checks everything in one shot:
 ```bash
-pip install appstore-review-cli
+if command -v appstore-reviews &>/dev/null; then
+  echo "OK: appstore-reviews"
+elif python3 -m appinsight --help &>/dev/null; then
+  echo "OK: python3 -m appinsight"
+else
+  for d in .venv venv env; do
+    if [ -f "$d/bin/activate" ]; then
+      echo "Activating $d"
+      source "$d/bin/activate"
+      break
+    fi
+  done
+  if command -v appstore-reviews &>/dev/null; then
+    echo "OK: appstore-reviews"
+  elif python3 -m appinsight --help &>/dev/null; then
+    echo "OK: python3 -m appinsight"
+  else
+    echo "NOT INSTALLED"
+  fi
+fi
 ```
-If `appstore-reviews` is still not found after install (PATH issue), use: `python -m appinsight` as an identical fallback that doesn't require PATH setup.
+
+**Read the output:**
+- `OK: appstore-reviews` - Use `appstore-reviews` as the command for all subsequent calls.
+- `OK: python3 -m appinsight` - Use `python3 -m appinsight` as the command for all subsequent calls.
+- `NOT INSTALLED` - Stop and tell the user:
+  > `appstore-review-cli` is not installed in your current Python environment. Install it with:
+  > ```bash
+  > pip install appstore-review-cli
+  > ```
+  > Or create an isolated environment first:
+  > ```bash
+  > python3 -m venv .venv && source .venv/bin/activate && pip install appstore-review-cli
+  > ```
+
+  Do NOT run `pip install` yourself without asking the user first.
+
+**Important**: Use the working command from the bootstrap for ALL subsequent calls in the session. Do not re-check or switch commands mid-session.
+
+## Common Mistakes (NEVER do these)
+
+- **NEVER use `python`** - always use `python3`. Many systems do not have `python` in PATH.
+- **NEVER run `pip install` without asking the user** - they may want a specific environment.
+- **NEVER run `pip list | grep` to check installation** - the bootstrap script above already handles detection.
+- **NEVER run the bootstrap steps as separate commands** - run the single script above, read the output, done.
+- **NEVER try `appstore-reviews`, then `python -m appinsight`, then `python3 -m appinsight` as separate commands** - the bootstrap handles all of this in one call.
 
 ## Quick Reference
 

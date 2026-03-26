@@ -12,20 +12,58 @@ You have access to a CLI tool called `appstore-reviews` that scrapes Apple App S
 
 **You ARE the analyzer.** Fetch reviews with the CLI commands below, then analyze them directly in your response. Do NOT suggest the user install Ollama or run the `analyze` command - you have the intelligence to do the analysis yourself.
 
-## Prerequisites
+## CLI Bootstrap (run this FIRST - ONE command)
 
-The tool must be installed before use. Run this to install and verify:
+Before running any review commands, run this **single** preflight script. It checks everything in one shot:
 ```bash
-pip install appstore-review-cli && appstore-reviews --help
+if command -v appstore-reviews &>/dev/null; then
+  echo "OK: appstore-reviews"
+elif python3 -m appinsight --help &>/dev/null; then
+  echo "OK: python3 -m appinsight"
+else
+  for d in .venv venv env; do
+    if [ -f "$d/bin/activate" ]; then
+      echo "Activating $d"
+      source "$d/bin/activate"
+      break
+    fi
+  done
+  if command -v appstore-reviews &>/dev/null; then
+    echo "OK: appstore-reviews"
+  elif python3 -m appinsight --help &>/dev/null; then
+    echo "OK: python3 -m appinsight"
+  else
+    echo "NOT INSTALLED"
+  fi
+fi
 ```
+
+**Read the output:**
+- `OK: appstore-reviews` - Use `appstore-reviews` as the command for all subsequent calls.
+- `OK: python3 -m appinsight` - Use `python3 -m appinsight` as the command for all subsequent calls.
+- `NOT INSTALLED` - Stop and tell the user:
+  > `appstore-review-cli` is not installed in your current Python environment. Install it with:
+  > ```bash
+  > pip install appstore-review-cli
+  > ```
+  > Or create an isolated environment first:
+  > ```bash
+  > python3 -m venv .venv && source .venv/bin/activate && pip install appstore-review-cli
+  > ```
+
+  Do NOT run `pip install` yourself without asking the user first.
+
+**Important**: Use the working command from the bootstrap for ALL subsequent calls in the session. Do not re-check or switch commands mid-session.
+
 For Google Play support: `pip install "appstore-review-cli[google]"`
 
-If `appstore-reviews` is still not found after install (PATH issue), use the fallback:
-```bash
-python -m appinsight search "app name"
-python -m appinsight reviews <APP_ID> --stars 2
-```
-`python -m appinsight` works identically to `appstore-reviews` and does not require PATH setup.
+## Common Mistakes (NEVER do these)
+
+- **NEVER use `python`** - always use `python3`. Many systems do not have `python` in PATH.
+- **NEVER run `pip install` without asking the user** - they may want a specific environment.
+- **NEVER run `pip list | grep` to check installation** - the bootstrap script above already handles detection.
+- **NEVER run the bootstrap steps as separate commands** - run the single script above, read the output, done.
+- **NEVER try `appstore-reviews`, then `python -m appinsight`, then `python3 -m appinsight` as separate commands** - the bootstrap handles all of this in one call.
 
 **Always use the CLI in the terminal. Do NOT use the Python API or import statements - use the bash commands shown below.**
 
