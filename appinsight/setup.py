@@ -93,7 +93,7 @@ def cmd_setup(args):
 
         # Check if file already exists
         if os.path.exists(full_path):
-            if not args.force:
+            if not args.force and not args.append:
                 display = os.path.join("~", target_path) if use_global else target_path
                 print(f"Already exists: {display}", file=sys.stderr)
                 print(f"  Use --force to overwrite, or --append to add to existing file.", file=sys.stderr)

@@ -1,7 +1,7 @@
 ---
 name: appstore-reviews
 description: "Scrape and analyze Apple App Store and Google Play reviews using the pre-installed appstore-reviews CLI. Use when the user asks about app reviews, competitor analysis, user complaints, feature gaps, bug reports, rating trends, or version comparisons for mobile apps."
-compatibility: "Requires Python 3.8+ with appstore-review-cli pre-installed by the user"
+compatibility: "Requires Python 3.10+ with appstore-review-cli pre-installed by the user"
 ---
 
 # App Store & Google Play Review Scraper
@@ -94,6 +94,9 @@ All commands support `--format json` and `--format csv`.
 - **Google Play import errors**: If `--store google` fails with an import error about `google_play_scraper`, the optional dependency is missing. Tell the user and stop.
 - **Country codes**: Default is `us`. Accepts ISO codes (`de`, `gb`, `fr`) or full names (`germany`, `japan`, `united kingdom`).
 - **Do not redirect output to files** (`> file.txt`, `> reviews.csv`) unless the user explicitly asks for file export. Read output from the terminal directly.
+- **Large output**: Start with the default `--pages 3`. Only increase if you need more data. Fetching `--pages 10` in text format can produce output that exceeds your context window.
+- **Rate limiting**: Do not fetch the same app repeatedly in a loop. If a request returns empty or fails unexpectedly, wait a few seconds before retrying.
+- **Shell commands assume POSIX** (bash/zsh). If the user's terminal is PowerShell, adapt the activation and piping syntax accordingly.
 
 ## How to analyze
 
