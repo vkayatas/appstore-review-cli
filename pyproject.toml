@@ -1,6 +1,6 @@
 [project]
 name = "appstore-review-cli"
-version = "0.1.9"
+version = "0.1.10"
 description = "Scrape iOS App Store and Google Play reviews. Filter the noise. Feed the signal to your coding agent."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -54,6 +54,7 @@ packages = ["appinsight"]
 [tool.hatch.build.targets.wheel.force-include]
 "appinsight/instructions/claude.md" = "appinsight/instructions/claude.md"
 "appinsight/instructions/copilot.md" = "appinsight/instructions/copilot.md"
+"appinsight/instructions/scripts/run.sh" = "appinsight/instructions/scripts/run.sh"
 
 [dependency-groups]
 dev = [

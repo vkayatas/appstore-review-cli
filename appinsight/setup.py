@@ -17,6 +17,7 @@ AGENTS = {
             (os.path.join(".copilot", "skills", "appstore-reviews", "SKILL.md"),
              "~/.copilot/skills/appstore-reviews/ (available across all projects)"),
         ],
+        "scripts_dir": os.path.join("appstore-reviews"),
     },
     "claude": {
         "source": "claude.md",
@@ -28,6 +29,7 @@ AGENTS = {
             (os.path.join(".claude", "skills", "appstore-reviews", "SKILL.md"),
              "~/.claude/skills/appstore-reviews/ (available across all projects)"),
         ],
+        "scripts_dir": os.path.join("appstore-reviews"),
     },
     "cursor": {
         "source": "claude.md",
@@ -44,9 +46,21 @@ AGENTS = {
 }
 
 
+# Bundled scripts to install alongside SKILL.md in skill directories
+SCRIPTS = {
+    "run.sh": "scripts/run.sh",
+}
+
+
 def _read_instruction(filename: str) -> str:
     """Read a bundled instruction file from the package."""
     ref = resources.files("appinsight.instructions").joinpath(filename)
+    return ref.read_text(encoding="utf-8")
+
+
+def _read_script(filename: str) -> str:
+    """Read a bundled script file from the package."""
+    ref = resources.files("appinsight.instructions").joinpath("scripts", filename)
     return ref.read_text(encoding="utf-8")
 
 
@@ -102,6 +116,19 @@ def cmd_setup(args):
             print(f"Created: {display}", file=sys.stderr)
 
         print(f"  -> {description}", file=sys.stderr)
+
+    # Install bundled scripts alongside SKILL.md (for skill-directory agents only)
+    if "scripts_dir" in config:
+        for script_name, script_rel_path in SCRIPTS.items():
+            script_content = _read_script(script_name)
+            for target_path, _ in targets:
+                skill_dir = os.path.dirname(os.path.join(base_dir, target_path))
+                script_full_path = os.path.join(skill_dir, script_rel_path)
+                script_parent = os.path.dirname(script_full_path)
+                os.makedirs(script_parent, exist_ok=True)
+                with open(script_full_path, "w", encoding="utf-8") as f:
+                    f.write(script_content)
+                os.chmod(script_full_path, 0o755)
 
     scope = "globally" if use_global else "in this project"
     print(f"\nDone! Your {agent} agent now knows about appstore-reviews ({scope}).", file=sys.stderr)
